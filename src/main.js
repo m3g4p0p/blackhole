@@ -1,5 +1,7 @@
 const k = kaboom
-let difficulty = 5
+let difficulty = 1
+let score = 0
+let highscore = 0
 
 const MOVE = {
   X: 100,
@@ -8,7 +10,8 @@ const MOVE = {
 
 const SIZE = {
   SHIP: { X: 20, Y: 40 },
-  BOOST: { X: 10, Y: 10 }
+  BOOST: { X: 10, Y: 10 },
+  FLAME: { X: 20, Y: 5 }
 }
 
 const TIME = {
@@ -21,6 +24,7 @@ const FACTOR = {
 }
 
 const GRAVITY = 1000
+const COOLING = 0.1
 
 k.init({
   width: 800,
@@ -34,11 +38,11 @@ k.scene('start', () => {
   ])
 
   function updateInfo () {
-    info.text = 'Difficulty: ' + difficulty
+    info.text = `Difficulty: ${difficulty}\n\nHighscore: ${highscore}`
   }
 
   k.add([
-    k.text('Press SPACE to start falling'),
+    k.text('Press SPACE to start falling!'),
     k.pos(200, 200)
   ])
 
@@ -61,7 +65,7 @@ k.scene('start', () => {
 
 k.scene('main', () => {
   let gravity = GRAVITY
-  let score = 0
+  score = 0
 
   const info = k.add([
     k.text(''),
@@ -78,6 +82,27 @@ k.scene('main', () => {
   function addScore (value) {
     score += value
     info.text = score
+  }
+
+  function ignite () {
+    const flame = k.add([
+      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
+      k.pos(ship.pos.x, ship.pos.y + SIZE.SHIP.Y),
+      k.color(1, 1, 0)
+    ])
+
+    let heat = 1
+
+    k.wait(COOLING, function cool () {
+      heat -= COOLING
+
+      if (heat === 0) {
+        k.destroy(flame)
+      } else {
+        flame.color = k.rgba(1, heat, 0, heat)
+        k.wait(COOLING, cool)
+      }
+    })
   }
 
   function spawnBoost () {
@@ -123,6 +148,7 @@ k.scene('main', () => {
 
   k.keyPress('space', () => {
     ship.jump()
+    ignite()
   })
 
   k.keyDown('left', () => {
@@ -142,10 +168,11 @@ k.scene('main', () => {
 
 k.scene('death', () => {
   k.add([
-    k.text('Gravity ate you up.'),
+    k.text(`Gravity ate you up!\n\nYour score was ${score}.`),
     k.pos(200, 200)
   ])
 
+  highscore = Math.max(score, highscore)
   k.wait(3, () => k.go('start'))
 })
 
