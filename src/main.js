@@ -24,7 +24,6 @@ const FACTOR = {
 }
 
 const GRAVITY = 1000
-const COOLING = 0.1
 
 k.init({
   width: 800,
@@ -73,10 +72,11 @@ k.scene('main', () => {
   ])
 
   const ship = k.add([
-    k.pos(k.width() / 2, k.height() / 1.5),
     k.body(),
+    k.pos(k.width() / 2, k.height() / 1.5),
     k.rect(SIZE.SHIP.X, SIZE.SHIP.Y),
-    k.color(1, 1, 1)
+    k.color(1, 1, 1),
+    k.rotate(0)
   ])
 
   function addScore (value) {
@@ -88,21 +88,25 @@ k.scene('main', () => {
     const flame = k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
       k.pos(ship.pos.x, ship.pos.y + SIZE.SHIP.Y),
+      k.rotate(ship.angle),
       k.color(1, 1, 0)
     ])
 
-    let heat = 1
+    const start = Date.now()
 
-    k.wait(COOLING, function cool () {
-      heat -= COOLING
+    flame.action(() => {
+      const delta = 1 - (Date.now() - start) / 1000
+      flame.color = k.rgba(1, delta, 0, delta)
 
-      if (heat === 0) {
+      if (delta <= 0) {
         k.destroy(flame)
-      } else {
-        flame.color = k.rgba(1, heat, 0, heat)
-        k.wait(COOLING, cool)
       }
     })
+  }
+
+  function rotate () {
+    const width = k.width()
+    ship.angle = (ship.pos.x - width / 2) / -width
   }
 
   function spawnBoost () {
@@ -120,20 +124,18 @@ k.scene('main', () => {
   }
 
   ship.action(() => {
-    if (
-      ship.pos.y >= k.height() ||
-      ship.pos.x < 0 ||
-      ship.pos.x >= k.width() - SIZE.SHIP.X
-    ) {
+    if (ship.pos.y >= k.height()) {
       k.go('death')
+    } else {
+      rotate()
     }
   })
 
   ship.collides('boost', boost => {
     addScore(difficulty * FACTOR.SCORE)
     k.destroy(boost)
-    ship.jump(gravity)
-    gravity = Math.min(GRAVITY, gravity - GRAVITY)
+    ship.jump(gravity / 2)
+    gravity = Math.max(GRAVITY, gravity - GRAVITY)
   })
 
   k.gravity(gravity)
