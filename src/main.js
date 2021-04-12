@@ -1,6 +1,6 @@
 const k = kaboom
 let difficulty = 1
-let score = 0
+let lastScore = 0
 let highscore = 0
 
 const MOVE = {
@@ -23,7 +23,7 @@ const FACTOR = {
   SCORE: 10
 }
 
-const GRAVITY = 1000
+const INITIAL_GRAVITY = 1000
 
 k.init({
   width: 800,
@@ -63,12 +63,27 @@ k.scene('start', () => {
 })
 
 k.scene('main', () => {
-  let gravity = GRAVITY
-  score = 0
+  lastScore = 0
 
-  const info = k.add([
+  k.layers([
+    'info',
+    'game'
+  ], 'game')
+
+  const score = k.add([
     k.text(''),
-    k.pos(10, 10)
+    k.pos(10, 10),
+    k.layer('info'),
+    { value: 0 }
+  ])
+
+  const gravity = k.add([
+    k.rect(10, 0),
+    k.pos(k.width() - 10, k.height() - 10),
+    k.origin('botright'),
+    k.layer('info'),
+    k.color(0.5, 0.5, 0.5),
+    { value: INITIAL_GRAVITY }
   ])
 
   const ship = k.add([
@@ -80,8 +95,14 @@ k.scene('main', () => {
   ])
 
   function addScore (value) {
-    score += value
-    info.text = score
+    score.value += value
+    score.text = score.value
+  }
+
+  function addGravity (value) {
+    gravity.value = Math.max(INITIAL_GRAVITY, gravity.value + value)
+    gravity.height = (gravity.value - INITIAL_GRAVITY) / 100
+    k.gravity(gravity.value)
   }
 
   function ignite () {
@@ -125,6 +146,7 @@ k.scene('main', () => {
 
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
+      lastScore = score.value
       k.go('death')
     } else {
       rotate()
@@ -134,18 +156,15 @@ k.scene('main', () => {
   ship.collides('boost', boost => {
     addScore(difficulty * FACTOR.SCORE)
     k.destroy(boost)
-    ship.jump(gravity / 2)
-    gravity = Math.max(GRAVITY, gravity - GRAVITY)
+    ship.jump(gravity.value / 2)
+    addGravity(-gravity.value / 2)
   })
 
-  k.gravity(gravity)
-
-  k.loop(1, () => {
-    k.gravity(gravity += difficulty * FACTOR.GRAVITY)
-  })
+  k.gravity(INITIAL_GRAVITY)
 
   k.loop(1 / difficulty, () => {
     addScore(1)
+    addGravity(FACTOR.GRAVITY)
   })
 
   k.keyPress('space', () => {
@@ -170,11 +189,11 @@ k.scene('main', () => {
 
 k.scene('death', () => {
   k.add([
-    k.text(`Gravity ate you up!\n\nYour score was ${score}.`),
+    k.text(`Gravity ate you up!\n\nYour score was ${lastScore}.`),
     k.pos(200, 200)
   ])
 
-  highscore = Math.max(score, highscore)
+  highscore = Math.max(lastScore, highscore)
   k.wait(3, () => k.go('start'))
 })
 
