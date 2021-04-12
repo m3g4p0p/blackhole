@@ -11,7 +11,8 @@ const MOVE = {
 const SIZE = {
   SHIP: { X: 20, Y: 40 },
   BOOST: { X: 10, Y: 10 },
-  FLAME: { X: 20, Y: 5 }
+  FLAME: { X: 20, Y: 5 },
+  STAR: { X: 5, Y: 5 }
 }
 
 const TIME = {
@@ -24,6 +25,7 @@ const FACTOR = {
 }
 
 const INITIAL_GRAVITY = 1000
+const STARS = 10
 
 k.init({
   width: 800,
@@ -67,6 +69,7 @@ k.scene('main', () => {
 
   k.layers([
     'info',
+    'background',
     'game'
   ], 'game')
 
@@ -144,6 +147,26 @@ k.scene('main', () => {
     k.wait(TIME.BOOST, () => k.destroy(boost))
   }
 
+  function spawnStar (y = 0) {
+    const star = k.add([
+      k.rect(SIZE.STAR.X, SIZE.STAR.Y),
+      k.pos(k.rand(0, k.width() - SIZE.STAR.X), k.height() - y),
+      k.color(1, 1, 1, k.rand(0.1, 0.9)),
+      k.layer('background')
+    ])
+
+    const start = Date.now()
+
+    star.action(() => {
+      star.pos.y -= (Date.now() - start) / gravity.value
+
+      if (star.pos.y < SIZE.STAR.Y) {
+        k.destroy(star)
+        spawnStar()
+      }
+    })
+  }
+
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
       lastScore = score.value
@@ -185,6 +208,10 @@ k.scene('main', () => {
   })
 
   k.wait(TIME.BOOST, spawnBoost)
+
+  for (let i = 0; i < STARS; i++) {
+    spawnStar(k.rand(0, k.height()))
+  }
 })
 
 k.scene('death', () => {
