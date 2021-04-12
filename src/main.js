@@ -9,6 +9,7 @@ const MOVE = {
 }
 
 const SIZE = {
+  GAME: { X: 800, Y: 800 },
   SHIP: { X: 20, Y: 40 },
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },
@@ -26,10 +27,23 @@ const FACTOR = {
 
 const INITIAL_GRAVITY = 1000
 const STARS = 10
+const CAM_THRESHOLD = 20
+
+function getVisibleArea () {
+  const pos = k.camPos()
+  const scale = k.camScale()
+  const width = k.width() / scale.x
+  const height = k.height() / scale.y
+
+  return k.area(
+    pos.sub(width / 2, height / 2),
+    pos.add(width / 2, height / 2)
+  )
+}
 
 k.init({
-  width: 800,
-  height: 800
+  width: SIZE.GAME.X,
+  height: SIZE.GAME.Y
 })
 
 k.scene('start', () => {
@@ -111,9 +125,10 @@ k.scene('main', () => {
   function ignite () {
     const flame = k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.x, ship.pos.y + SIZE.SHIP.Y),
+      k.pos(ship.pos.x, ship.pos.y + ship.areaHeight()),
       k.rotate(ship.angle),
-      k.color(1, 1, 0)
+      k.color(1, 1, 0),
+      k.layer('background')
     ])
 
     const start = Date.now()
@@ -133,6 +148,11 @@ k.scene('main', () => {
     ship.angle = (ship.pos.x - width / 2) / -width
   }
 
+  function adjustCam () {
+    const delta = Math.min(0, ship.pos.y - CAM_THRESHOLD)
+    k.camPos(k.camPos().x, k.height() / 2 + delta)
+  }
+
   function spawnBoost () {
     const boost = k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
@@ -150,7 +170,10 @@ k.scene('main', () => {
   function spawnStar (y = 0) {
     const star = k.add([
       k.rect(SIZE.STAR.X, SIZE.STAR.Y),
-      k.pos(k.rand(0, k.width() - SIZE.STAR.X), k.height() - y),
+      k.pos(
+        k.rand(0, k.width() - SIZE.STAR.X),
+        k.height() * 1.5 - k.camPos().y - y
+      ),
       k.color(1, 1, 1, k.rand(0.1, 0.9)),
       k.layer('background')
     ])
@@ -173,6 +196,7 @@ k.scene('main', () => {
       k.go('death')
     } else {
       rotate()
+      adjustCam()
     }
   })
 
@@ -184,6 +208,7 @@ k.scene('main', () => {
   })
 
   k.gravity(INITIAL_GRAVITY)
+  k.camIgnore(['info'])
 
   k.loop(1 / difficulty, () => {
     addScore(1)
@@ -191,16 +216,24 @@ k.scene('main', () => {
   })
 
   k.keyPress('space', () => {
+    if (ship.pos.y < 0) {
+      return
+    }
+
     ship.jump()
     ignite()
   })
 
   k.keyDown('left', () => {
-    ship.move(-MOVE.X, MOVE.Y)
+    if (ship.pos.x > 0) {
+      ship.move(-MOVE.X, MOVE.Y)
+    }
   })
 
   k.keyDown('right', () => {
-    ship.move(MOVE.X, MOVE.Y)
+    if (ship.pos.x < k.width()) {
+      ship.move(MOVE.X, MOVE.Y)
+    }
   })
 
   k.on('destroy', 'boost', () => {
