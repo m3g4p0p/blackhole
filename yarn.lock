@@ -93,11 +93,6 @@
   resolved "https://registry.yarnpkg.com/@types/json5/-/json5-0.0.29.tgz#ee28707ae94e11d2b827bcbe5270bcea7f3e71ee"
   integrity sha1-7ihweulOEdK4J7y+UnC86n8+ce4=
 
-"@types/matter-js@^0.14.11":
-  version "0.14.11"
-  resolved "https://registry.yarnpkg.com/@types/matter-js/-/matter-js-0.14.11.tgz#7fd07262e3cbd424b55004e36595b7d22cb74930"
-  integrity sha512-8oRVe57T/s1Fknnr1TTFZqRjOmp5syQptQCyYMvpfh/dWx3GvhcOUHoTOrg5seMguE//IOS+Wu32c0zAzewfXQ==
-
 "@types/minimatch@*":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@types/minimatch/-/minimatch-3.0.4.tgz#f0ec25dbf2f0e4b18647313ac031134ca5b24b21"
@@ -768,11 +763,6 @@ commander@^7.0.0:
   version "7.2.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-7.2.0.tgz#a36cb57d0b501ce108e4d20559a150a391d97ab7"
   integrity sha512-QrWXB+ZQSVPmIWIhtEO9H+gwHaMGYiF5ChvoJ+K9ZGHG/sVsa6yiesAD1GC/x46sET00Xlwo1u49RVVVzvcSkw==
-
-commander@~2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/commander/-/commander-2.0.0.tgz#d1b86f901f8b64bd941bdeadaf924530393be928"
-  integrity sha1-0bhvkB+LZL2UG96tr5JFMDk76Sg=
 
 component-emitter@^1.2.1:
   version "1.3.0"
@@ -2409,13 +2399,6 @@ json5@^2.1.2:
     array-includes "^3.1.2"
     object.assign "^4.1.2"
 
-kaboom@^0.0.1:
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/kaboom/-/kaboom-0.0.1.tgz#994e599ab218911c84e716304540539ad0325fac"
-  integrity sha1-mU5ZmrIYkRyE5xYwRUBTmtAyX6w=
-  dependencies:
-    commander "~2.0.0"
-
 killable@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/killable/-/killable-1.0.1.tgz#4c8ce441187a061c7474fb87ca08e2a638194892"
@@ -2553,11 +2536,6 @@ map-visit@^1.0.0:
   integrity sha1-7Nyo8TFE5mDxtb1B8S80edmN+48=
   dependencies:
     object-visit "^1.0.0"
-
-matter-js@^0.16.1:
-  version "0.16.1"
-  resolved "https://registry.yarnpkg.com/matter-js/-/matter-js-0.16.1.tgz#2466ef8ac54595e1869a7133091124caea568af6"
-  integrity sha512-P3nvyqTa7xxNOYbTtFVQFj9z9nf4Lyo9uHvncEXEUnyxYl4ntSjlnU73/ejFH6IUxpekDR9wqpnA1WvRdQ9B6A==
 
 media-typer@0.3.0:
   version "0.3.0"

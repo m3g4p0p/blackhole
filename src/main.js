@@ -1,4 +1,4 @@
-const k = kaboom
+const k = window.kaboom
 let difficulty = 1
 let lastScore = 0
 let highscore = 0
@@ -22,7 +22,7 @@ const TIME = {
 
 const FACTOR = {
   GRAVITY: 100,
-  SCORE: 10
+  SCORE: 20
 }
 
 const INITIAL_GRAVITY = 1000
@@ -39,6 +39,14 @@ function getVisibleArea () {
     pos.sub(width / 2, height / 2),
     pos.add(width / 2, height / 2)
   )
+}
+
+function spawn (components) {
+  const spawned = Date.now()
+
+  return k.add([...components, {
+    getAge: () => Date.now() - spawned
+  }])
 }
 
 k.init({
@@ -122,27 +130,6 @@ k.scene('main', () => {
     k.gravity(gravity.value)
   }
 
-  function ignite () {
-    const flame = k.add([
-      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.x, ship.pos.y + ship.areaHeight()),
-      k.rotate(ship.angle),
-      k.color(1, 1, 0),
-      k.layer('background')
-    ])
-
-    const start = Date.now()
-
-    flame.action(() => {
-      const delta = 1 - (Date.now() - start) / 1000
-      flame.color = k.rgba(1, delta, 0, delta)
-
-      if (delta <= 0) {
-        k.destroy(flame)
-      }
-    })
-  }
-
   function rotate () {
     const width = k.width()
     ship.angle = (ship.pos.x - width / 2) / -width
@@ -153,14 +140,25 @@ k.scene('main', () => {
     k.camPos(k.camPos().x, k.height() / 2 + delta)
   }
 
+  function ignite () {
+    spawn([
+      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
+      k.pos(ship.pos.x, ship.pos.y + ship.areaHeight()),
+      k.rotate(ship.angle),
+      k.color(1, 1, 0),
+      k.layer('background'),
+      'flame'
+    ])
+  }
+
   function spawnBoost () {
     const boost = k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
-      k.color(0, 1, 0.5),
       k.pos(
         k.rand(0, k.width() - SIZE.BOOST.X),
         k.rand(0, k.height() - SIZE.BOOST.Y)
       ),
+      k.color(0, 1, 0.5),
       'boost'
     ])
 
@@ -168,26 +166,16 @@ k.scene('main', () => {
   }
 
   function spawnStar (y = 0) {
-    const star = k.add([
+    spawn([
       k.rect(SIZE.STAR.X, SIZE.STAR.Y),
       k.pos(
         k.rand(0, k.width() - SIZE.STAR.X),
         k.height() * 1.5 - k.camPos().y - y
       ),
       k.color(1, 1, 1, k.rand(0.1, 0.9)),
-      k.layer('background')
+      k.layer('background'),
+      'star'
     ])
-
-    const start = Date.now()
-
-    star.action(() => {
-      star.pos.y -= (Date.now() - start) / gravity.value
-
-      if (star.pos.y < SIZE.STAR.Y) {
-        k.destroy(star)
-        spawnStar()
-      }
-    })
   }
 
   ship.action(() => {
@@ -204,7 +192,25 @@ k.scene('main', () => {
     addScore(difficulty * FACTOR.SCORE)
     k.destroy(boost)
     ship.jump(gravity.value / 2)
-    addGravity(-gravity.value / 2)
+    addGravity((INITIAL_GRAVITY - gravity.value) / 2)
+  })
+
+  k.action('star', star => {
+    star.pos.y -= star.getAge() / gravity.value
+
+    if (star.pos.y < star.areaHeight()) {
+      k.destroy(star)
+      spawnStar()
+    }
+  })
+
+  k.action('flame', flame => {
+    const delta = 1 - flame.getAge() / 1000
+    flame.color = k.rgba(1, delta, 0, delta)
+
+    if (delta <= 0) {
+      k.destroy(flame)
+    }
   })
 
   k.gravity(INITIAL_GRAVITY)
