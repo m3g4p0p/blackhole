@@ -29,18 +29,6 @@ const INITIAL_GRAVITY = 1000
 const STARS = 10
 const CAM_THRESHOLD = 20
 
-function getVisibleArea () {
-  const pos = k.camPos()
-  const scale = k.camScale()
-  const width = k.width() / scale.x
-  const height = k.height() / scale.y
-
-  return k.area(
-    pos.sub(width / 2, height / 2),
-    pos.add(width / 2, height / 2)
-  )
-}
-
 function spawn (components) {
   const spawned = Date.now()
 
@@ -48,6 +36,9 @@ function spawn (components) {
     getAge: () => Date.now() - spawned
   }])
 }
+
+k.loadSound('boost', 'assets/boost.wav')
+k.loadSound('death', 'assets/death.wav')
 
 k.init({
   width: SIZE.GAME.X,
@@ -81,6 +72,10 @@ k.scene('start', () => {
   k.keyPress('down', () => {
     difficulty = Math.max(1, difficulty - 1)
     updateInfo()
+  })
+
+  k.keyPress('m', () => {
+    k.volume((k.volume() + 1) % 2)
   })
 
   updateInfo()
@@ -189,16 +184,17 @@ k.scene('main', () => {
   })
 
   ship.collides('boost', boost => {
-    addScore(difficulty * FACTOR.SCORE)
+    k.play('boost')
     k.destroy(boost)
     ship.jump(gravity.value / 2)
+    addScore(difficulty * FACTOR.SCORE)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
   })
 
   k.action('star', star => {
-    star.pos.y -= star.getAge() / gravity.value
+    star.pos.y -= star.getAge() / gravity.value * star.color.a
 
-    if (star.pos.y < star.areaHeight()) {
+    if (star.pos.y < -star.areaHeight()) {
       k.destroy(star)
       spawnStar()
     }
@@ -254,6 +250,8 @@ k.scene('main', () => {
 })
 
 k.scene('death', () => {
+  k.play('death')
+
   k.add([
     k.text(`Gravity ate you up!\n\nYour score was ${lastScore}.`),
     k.pos(200, 200)
