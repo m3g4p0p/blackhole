@@ -1,4 +1,4 @@
-const k = window.kaboom
+const k = window.k = window.kaboom
 let difficulty = 1
 let lastScore = 0
 let highscore = 0
@@ -35,6 +35,18 @@ function spawn (components) {
   return k.add([...components, {
     getAge: () => Date.now() - spawned
   }])
+}
+
+function addInfo (components, x, y, s = 1) {
+  const width = k.width()
+  const height = k.height()
+
+  return k.add([
+    k.pos((width + x) % width, (height + y) % height),
+    k.color(s, s, s),
+    k.layer('info'),
+    ...components
+  ])
 }
 
 k.loadSound('boost', 'assets/boost.wav')
@@ -90,21 +102,20 @@ k.scene('main', () => {
     'game'
   ], 'game')
 
-  const score = k.add([
-    k.text(''),
-    k.pos(10, 10),
-    k.layer('info'),
-    { value: 0 }
-  ])
+  addInfo([
+    k.text('G')
+  ], -10, -10, 0.5)
 
-  const gravity = k.add([
+  const score = addInfo([
+    k.text(),
+    { value: 0 }
+  ], 10, 10)
+
+  const gravity = addInfo([
     k.rect(10, 0),
-    k.pos(k.width() - 10, k.height() - 10),
     k.origin('botright'),
-    k.layer('info'),
-    k.color(0.5, 0.5, 0.5),
     { value: INITIAL_GRAVITY }
-  ])
+  ], -10, -25, 0.5)
 
   const ship = k.add([
     k.body(),
@@ -135,17 +146,6 @@ k.scene('main', () => {
     k.camPos(k.camPos().x, k.height() / 2 + delta)
   }
 
-  function ignite () {
-    spawn([
-      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.x, ship.pos.y + ship.areaHeight()),
-      k.rotate(ship.angle),
-      k.color(1, 1, 0),
-      k.layer('background'),
-      'flame'
-    ])
-  }
-
   function spawnBoost () {
     const boost = k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
@@ -158,6 +158,17 @@ k.scene('main', () => {
     ])
 
     k.wait(TIME.BOOST, () => k.destroy(boost))
+  }
+
+  function spawnFlame () {
+    spawn([
+      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
+      k.pos(ship.pos.x, ship.pos.y + ship.areaHeight()),
+      k.rotate(ship.angle),
+      k.color(1, 1, 0),
+      k.layer('background'),
+      'flame'
+    ])
   }
 
   function spawnStar (y = 0) {
@@ -223,7 +234,7 @@ k.scene('main', () => {
     }
 
     ship.jump()
-    ignite()
+    spawnFlame()
   })
 
   k.keyDown('left', () => {
