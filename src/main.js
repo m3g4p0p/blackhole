@@ -49,9 +49,6 @@ function addInfo (components, x, y, s = 1) {
   ])
 }
 
-k.loadSound('boost', 'assets/boost.wav')
-k.loadSound('death', 'assets/death.wav')
-
 k.init({
   width: SIZE.GAME.X,
   height: SIZE.GAME.Y
@@ -84,10 +81,6 @@ k.scene('start', () => {
   k.keyPress('down', () => {
     difficulty = Math.max(1, difficulty - 1)
     updateInfo()
-  })
-
-  k.keyPress('m', () => {
-    k.volume((k.volume() + 1) % 2)
   })
 
   updateInfo()
@@ -195,7 +188,6 @@ k.scene('main', () => {
   })
 
   ship.collides('boost', boost => {
-    k.play('boost')
     k.destroy(boost)
     ship.jump(gravity.value / 2)
     addScore(difficulty * FACTOR.SCORE)
@@ -261,8 +253,6 @@ k.scene('main', () => {
 })
 
 k.scene('death', () => {
-  k.play('death')
-
   k.add([
     k.text(`Gravity ate you up!\n\nYour score was ${lastScore}.`),
     k.pos(200, 200)
