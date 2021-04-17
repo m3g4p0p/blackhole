@@ -28,6 +28,7 @@ const FACTOR = {
 const INITIAL_GRAVITY = 1000
 const STARS = 10
 const CAM_THRESHOLD = 20
+const JUMP_FORCE = 480
 
 function spawn (components) {
   const spawned = Date.now()
@@ -122,7 +123,7 @@ k.scene('main', () => {
   ], -10, -25, 0.5)
 
   const ship = k.add([
-    k.body(),
+    k.body({ jumpForce: JUMP_FORCE }),
     k.pos(k.width() / 2, k.height() / 1.5),
     k.rect(SIZE.SHIP.X, SIZE.SHIP.Y),
     k.color(1, 1, 1),

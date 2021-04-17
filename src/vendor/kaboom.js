@@ -1,9 +1,14 @@
 /*
 
 kaboom.js
-v0.1.0
+v0.2.0
 
 a JavaScript game programming library
+
+= Author
+tga <tga@space55.xyz>
+
+= License
 
 Copyright (C) 2021 Replit
 
@@ -20,31 +25,53 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-modules:
+= Index
 
-- assets
-  assets loader / manager
+(use the number at top border for quick search-jump)
 
-- app
-  manages canvas DOM and inputs
+*11111111*
+| assets |
+*--------*
+assets loader / manager
 
-- gfx
-  everything visual
+*22222*
+| app |
+*-----*
+manages canvas DOM and inputs
 
-- audio
-  everything audio
+*33333*
+| gfx |
+*-----*
+everything visual
 
-- game
-  scene management, component system
+*4444444*
+| audio |
+*-------*
+everything audio
 
-- comps
-  built-in components
+*555555*
+| math |
+*------*
+math utils
 
-- math
-  math utils
+*666666*
+| game |
+*------*
+scene management, component system
 
-- utils
-  misc utils
+*7777777*
+| comps |
+*-------*
+built-in components
+
+*8888888*
+| debug |
+*-------*
+debug utils
+
+*99999999*
+| helper |
+*--------*
 
 */
 
@@ -59,8 +86,24 @@ kaboom.debug = {
 	hoverInfo: false,
 };
 
-// ------------------------------------------------------------
-// assets
+/*
+
+*11111111*
+
+assets     *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 const DEF_FONT = "unscii";
 const ASCII_CHARS = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
@@ -115,20 +158,23 @@ function loadProgress() {
 
 // global load path prefix
 function loadRoot(path) {
-	if (path) {
-		assets.loadRoot = path;
-	}
-	return assets.loadRoot;
+	assets.loadRoot = path;
 }
 
 // load a bitmap font to asset manager
 function loadFont(name, src, gw, gh, chars) {
 
-	const loader = newLoader();
+	return new Promise((resolve, reject) => {
 
-	loadImg(src, (img) => {
-		assets.fonts[name] = makeFont(makeTex(img), gw, gh, chars || ASCII_CHARS);
-		loader.done();
+		const loader = newLoader();
+
+		loadImg(src, (img) => {
+			const font = makeFont(makeTex(img), gw, gh, chars || ASCII_CHARS);
+			loader.done();
+			assets.fonts[name] = font;
+			resolve(font);
+		});
+
 	});
 
 }
@@ -141,76 +187,133 @@ function loadSprite(name, src, conf = {}) {
 	// sliceY: num,
 	// anims: { name: [num, num] }
 
-	if (typeof(src) === "string") {
+	const curRoot = assets.loadRoot;
 
-		if (src.match(/\.kbmsprite$/)) {
+	// synchronously load sprite from local pixel data
+	//
+	// src could be either
+	//   - HTMLImageElement
+	//   - HTMLCanvasElement
+	//   - ImageData
+	//   - ImageBitmap
+	function loadRawSprite(name, src, conf = {}) {
 
-			// from replit kaboom workspace sprite editor
-			const loader = newLoader();
+		const frames = [];
+		const tex = makeTex(src);
+		const sliceX = conf.sliceX || 1;
+		const sliceY = conf.sliceY || 1;
+		const qw = 1 / sliceX;
+		const qh = 1 / sliceY;
 
-			fetch(assets.loadRoot + src)
-				.then((res) => {
-					return res.json();
-				})
-				.then((data) => {
-
-					const frames = data.frames;
-
-					const pixels = frames
-						.map(f => f.pixels)
-						.flat()
-						;
-
-					const w = frames[0].width;
-					const h = frames[0].height;
-
-					const img = new ImageData(
-						new Uint8ClampedArray(pixels),
-						w,
-						h * frames.length,
-					);
-
-					loadSprite(name, img, {
-						sliceY: frames.length,
-						anims: conf.anims,
-					});
-
-					loader.done();
-
-				})
-				.catch(() => {
-					console.error(`failed to load sprite '${name}' from '${src}'`);
-				})
-				;
-
-		} else {
-
-			// any other url
-			const loader = newLoader();
-			const img = loadImg(assets.loadRoot + src);
-
-			img.onload = () => {
-				loadSprite(name, img, conf);
-				loader.done();
-			};
-
-			img.onerror = () => {
-				console.error(`failed to load sprite '${name}' from '${src}'`);
-				loader.done();
-			};
-
+		for (let j = 0; j < sliceY; j++) {
+			for (let i = 0; i < sliceX; i++) {
+				frames.push(quad(
+					i * qw,
+					j * qh,
+					qw,
+					qh,
+				));
+			}
 		}
 
-		return;
+		const sprite = {
+			tex: tex,
+			frames: frames,
+			anims: conf.anims || {},
+		};
+
+		assets.sprites[name] = sprite;
+
+		return sprite;
 
 	}
 
-	if (conf.aseSpriteSheet) {
+	return new Promise((resolve, reject) => {
+
+		// from url
+		if (typeof(src) === "string") {
+
+			// from replit kaboom workspace sprite editor
+			if (src.match(/\.kbmsprite$/)) {
+
+				const loader = newLoader();
+
+				fetch(curRoot + src)
+					.then((res) => {
+						return res.json();
+					})
+					.then((data) => {
+
+						const frames = data.frames;
+
+						const pixels = frames
+							.map(f => f.pixels)
+							.flat()
+							;
+
+						const w = frames[0].width;
+						const h = frames[0].height;
+
+						const img = new ImageData(
+							new Uint8ClampedArray(pixels),
+							w,
+							h * frames.length,
+						);
+
+						const sprite = loadRawSprite(name, img, {
+							sliceY: frames.length,
+							anims: conf.anims,
+						});
+
+						loader.done();
+						resolve(sprite);
+
+					})
+					.catch(() => {
+						console.error(`failed to load sprite '${name}' from '${src}'`);
+					})
+					;
+
+			// any other url
+			} else {
+
+				const loader = newLoader();
+				const img = loadImg(curRoot + src);
+
+				img.onload = () => {
+					const sprite = loadRawSprite(name, img, conf);
+					loader.done();
+					resolve(sprite);
+				};
+
+				img.onerror = () => {
+					console.error(`failed to load sprite '${name}' from '${src}'`);
+					loader.done();
+				};
+
+			}
+
+			return;
+
+		} else {
+
+			resolve(loadRawSprite(name, src, conf));
+
+		}
+
+	});
+
+}
+
+function loadAseprite(name, imgSrc, jsonSrc) {
+
+	const curRoot = assets.loadRoot;
+
+	return loadSprite(name, imgSrc).then(() => {
 
 		const loader = newLoader();
 
-		// TODO: loadRoot might be changed already
-		fetch(assets.loadRoot + conf.aseSpriteSheet)
+		fetch(curRoot + jsonSrc)
 			.then((res) => {
 				return res.json();
 			})
@@ -229,34 +332,12 @@ function loadSprite(name, src, conf = {}) {
 				}
 				loader.done();
 			});
-	}
 
-	const frames = [];
-	const tex = makeTex(src);
-	const sliceX = conf.sliceX || 1;
-	const sliceY = conf.sliceY || 1;
-	const qw = 1 / sliceX;
-	const qh = 1 / sliceY;
-
-	for (let j = 0; j < sliceY; j++) {
-		for (let i = 0; i < sliceX; i++) {
-			frames.push(quad(
-				i * qw,
-				j * qh,
-				qw,
-				qh,
-			));
-		}
-	}
-
-	assets.sprites[name] = {
-		tex: tex,
-		frames: frames,
-		anims: conf.anims || {},
-	};
+	});
 
 }
 
+// TODO: finalize interface
 // get sprite asset settings
 function getSprite(name) {
 	const sprite = assets.sprites[name];
@@ -327,35 +408,60 @@ function getSprite(name) {
 // load a sound to asset manager
 function loadSound(name, src, conf = {}) {
 
-	if (typeof(src) === "string") {
+	const curRoot = assets.loadRoot;
 
-		const loader = newLoader();
+	return new Promise((resolve, reject) => {
 
-		fetch(assets.loadRoot + src)
-			.then((res) => {
-				return res.arrayBuffer();
-			})
-			.then((data) => {
-				// TODO: doesn't work on safari
-				audio.ctx.decodeAudioData(data, (buf) => {
+		// from url
+		if (typeof(src) === "string") {
+
+			const loader = newLoader();
+
+			fetch(curRoot + src)
+				.then((res) => {
+					return res.arrayBuffer();
+				})
+				.then((data) => {
+					// TODO: doesn't work on safari
+					audio.ctx.decodeAudioData(data, (buf) => {
+						loader.done();
+						audio.sounds[name] = buf;
+						resolve(buf);
+					}, (err) => {
+						console.error(`failed to decode audio: ${name}`);
+						loader.done();
+					});
+				})
+				.catch((err) => {
+					console.error(`failed to load sound '${name}' from '${src}'`);
 					loader.done();
-					audio.sounds[name] = buf;
-				}, (err) => {
-					console.error(`failed to decode audio: ${name}`);
-					loader.done();
-				});
-			})
-			.catch((err) => {
-				console.error(`failed to load sound '${name}' from '${src}'`);
-				loader.done();
-			})
-			;
+				})
+				;
 
-	}
+		}
+
+	});
+
 }
 
-// ------------------------------------------------------------
-// app
+/*
+
+*22222*
+
+app        *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 // app system init
 const app = {
@@ -444,26 +550,33 @@ function init(conf = {}) {
 		app.mouseState = "pressed";
 	});
 
+	// TODO: on mobile this is fired at the same frame as "mousedown" which cancels out
 	canvas.addEventListener("mouseup", (e) => {
 		app.mouseState = "released";
 	});
 
 	canvas.addEventListener("keydown", (e) => {
+
 		const k = keyMap[e.key] || e.key.toLowerCase();
+
 		if (preventDefaultKeys.includes(k)) {
 			e.preventDefault();
 		}
+
 		if (k.length === 1) {
 			app.charInputted.push(k);
 		}
+
 		if (k === "space") {
 			app.charInputted.push(" ");
 		}
+
 		if (e.repeat) {
 			app.keyStates[k] = "rpressed";
 		} else {
 			app.keyStates[k] = "pressed";
 		}
+
 	});
 
 	canvas.addEventListener("keyup", (e) => {
@@ -485,10 +598,17 @@ function processBtnState(s) {
 	return s;
 }
 
-// TODO: a variant with camera transforms
 // check input state last frame
-function mousePos() {
-	return app.mousePos.clone();
+function mousePos(layer) {
+
+	const scene = curScene();
+
+	if (!layer) {
+		return app.mousePos.clone();
+	} else {
+		return scene.cam.ignore.includes(layer) ? mousePos() : scene.camMousePos;
+	}
+
 }
 
 function mouseIsClicked() {
@@ -496,7 +616,7 @@ function mouseIsClicked() {
 }
 
 function mouseIsDown() {
-	return app.mouseState == "pressed" || app.mouseState === "down";
+	return app.mouseState === "pressed" || app.mouseState === "down";
 }
 
 function mouseIsReleased() {
@@ -535,8 +655,24 @@ function time() {
 	return app.time;
 }
 
-// ------------------------------------------------------------
-// gfx
+/*
+
+*33333*
+
+gfx        *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 const defVertSrc = `
 attribute vec3 a_pos;
@@ -712,13 +848,14 @@ function makeBatchedMesh(vcount, icount) {
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, icount * 2, gl.DYNAMIC_DRAW);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
+	let numIndices = 0;
+
 	return {
 
 		vbuf: vbuf,
 		ibuf: ibuf,
 		vqueue: [],
 		iqueue: [],
-		numIndices: 0,
 
 		push(verts, indices) {
 			// TODO: deal with overflow
@@ -739,7 +876,7 @@ function makeBatchedMesh(vcount, icount) {
 			gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, 0, new Uint16Array(this.iqueue));
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 
-			this.numIndices = this.iqueue.length;
+			numIndices = this.iqueue.length;
 
 			this.iqueue = [];
 			this.vqueue = [];
@@ -757,7 +894,7 @@ function makeBatchedMesh(vcount, icount) {
 		},
 
 		count() {
-			return this.numIndices;
+			return numIndices;
 		},
 
 	};
@@ -990,7 +1127,15 @@ function drawSprite(name, conf = {}) {
 		return;
 	}
 
-	const q = spr.frames[conf.frame || 0];
+	const q = { ...spr.frames[conf.frame || 0] };
+
+	if (conf.quad) {
+		q.x += conf.quad.x * q.w;
+		q.y += conf.quad.y * q.h;
+		q.w *= conf.quad.w;
+		q.h *= conf.quad.h;
+	}
+
 	const w = spr.tex.width * q.w;
 	const h = spr.tex.height * q.h;
 
@@ -1113,6 +1258,7 @@ function originPt(orig) {
 	}
 }
 
+// format text and return a list of chars with their calculated position
 function fmtText(text, conf = {}) {
 
 	const fontName = conf.font || DEF_FONT;
@@ -1198,8 +1344,24 @@ function fmtText(text, conf = {}) {
 
 }
 
-// ------------------------------------------------------------
-// audio
+/*
+
+*4444444*
+
+audio      *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 // audio system init
 const audio = {};
@@ -1220,7 +1382,6 @@ function volume(v) {
 	return audio.gainNode.gain.value;
 }
 
-// TODO: return control handle
 // plays a sound, returns a control handle
 function play(id, conf = {}) {
 
@@ -1236,39 +1397,103 @@ function play(id, conf = {}) {
 	srcNode.buffer = sound;
 	srcNode.loop = conf.loop ? true : false;
 
-	if (conf.detune) {
-		srcNode.detune.value = conf.detune;
-	}
-
-	if (conf.speed) {
-		srcNode.playbackRate.value = conf.speed;
-	}
-
 	const gainNode = audio.ctx.createGain();
-
-	if (conf.volume !== undefined) {
-		gainNode.gain.value = conf.volume;
-	}
 
 	srcNode.connect(gainNode);
 	gainNode.connect(audio.gainNode);
 	srcNode.start();
 
 	let paused = false;
+	let stopped = false;
+	let speed = 1;
 
-	return {
+	const handle = {
+
+		stop() {
+			srcNode.stop();
+			stopped = true;
+		},
+
 		resume() {
-			// TODO
+			if (paused) {
+				srcNode.playbackRate.value = speed;
+				paused = false;
+			}
 		},
+
 		pause() {
-			// TODO
+			srcNode.playbackRate.value = 0;
+			paused = true;
 		},
+
+		paused() {
+			return paused;
+		},
+
+		stopped() {
+			return stopped;
+		},
+
+		speed(val) {
+			if (val !== undefined) {
+				speed = Math.clamp(val, 0, 2);
+				if (!paused) {
+					srcNode.playbackRate.value = speed;
+				}
+			}
+			return speed;
+		},
+
+		detune(val) {
+			if (val !== undefined) {
+				srcNode.detune.value = Math.clamp(val, -1200, 1200);
+			}
+			return srcNode.detune.value;
+		},
+
+		volume(val) {
+			if (val !== undefined) {
+				gainNode.gain.value = Math.clamp(val, 0, 3);
+			}
+			return gainNode.gain.value;
+		},
+
+		loop() {
+			srcNode.loop = true;
+		},
+
+		unloop() {
+			srcNode.loop = false;
+		},
+
 	};
+
+	handle.speed(conf.speed);
+	handle.detune(conf.detune);
+	handle.volume(conf.volume);
+
+	return handle;
 
 }
 
-// ------------------------------------------------------------
-// math
+/*
+
+*555555*
+
+math       *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 Math.radians = function(degrees) {
 	return degrees * Math.PI / 180;
@@ -1276,6 +1501,10 @@ Math.radians = function(degrees) {
 
 Math.degrees = function(radians) {
 	return radians * 180 / Math.PI;
+};
+
+Math.clamp = function(val, min, max) {
+	return Math.min(Math.max(val, min), max);
 };
 
 function lerp(a, b, t) {
@@ -1348,6 +1577,11 @@ function vec2(x, y) {
 			return this.x === other.x && this.y === other.y;
 		},
 	};
+}
+
+// TODO: terrible name
+function vec2FromAngle(a) {
+	return vec2(Math.cos(a), Math.sin(a));
 }
 
 function isVec2(p) {
@@ -1611,25 +1845,25 @@ function mat4(m) {
 			const f17 = this.m[4] * this.m[10] - this.m[8] * this.m[6];
 			const f18 = this.m[4] * this.m[9] - this.m[8] * this.m[5];
 
-			out.m[0] = this.m[5] * f00 - this.m[6] * f01 + this.m[7] * f02;
-			out.m[4] = -(this.m[4] * f00 - this.m[6] * f03 + this.m[7] * f04);
-			out.m[8] = this.m[4] * f01 - this.m[5] * f03 + this.m[7] * f05;
-			out.m[12] = -(this.m[4] * f02 - this.m[5] * f04 + this.m[6] * f05);
+			out[0] = this.m[5] * f00 - this.m[6] * f01 + this.m[7] * f02;
+			out[4] = -(this.m[4] * f00 - this.m[6] * f03 + this.m[7] * f04);
+			out[8] = this.m[4] * f01 - this.m[5] * f03 + this.m[7] * f05;
+			out[12] = -(this.m[4] * f02 - this.m[5] * f04 + this.m[6] * f05);
 
-			out.m[1] = -(this.m[1] * f00 - this.m[2] * f01 + this.m[3] * f02);
-			out.m[5] = this.m[0] * f00 - this.m[2] * f03 + this.m[3] * f04;
-			out.m[9] = -(this.m[0] * f01 - this.m[1] * f03 + this.m[3] * f05);
-			out.m[13] = this.m[0] * f02 - this.m[1] * f04 + this.m[2] * f05;
+			out[1] = -(this.m[1] * f00 - this.m[2] * f01 + this.m[3] * f02);
+			out[5] = this.m[0] * f00 - this.m[2] * f03 + this.m[3] * f04;
+			out[9] = -(this.m[0] * f01 - this.m[1] * f03 + this.m[3] * f05);
+			out[13] = this.m[0] * f02 - this.m[1] * f04 + this.m[2] * f05;
 
-			out.m[2] = this.m[1] * f06 - this.m[2] * f07 + this.m[3] * f08;
-			out.m[6] = -(this.m[0] * f06 - this.m[2] * f09 + this.m[3] * f10);
-			out.m[10] = this.m[0] * f11 - this.m[1] * f09 + this.m[3] * f12;
-			out.m[14] = -(this.m[0] * f08 - this.m[1] * f10 + this.m[2] * f12);
+			out[2] = this.m[1] * f06 - this.m[2] * f07 + this.m[3] * f08;
+			out[6] = -(this.m[0] * f06 - this.m[2] * f09 + this.m[3] * f10);
+			out[10] = this.m[0] * f11 - this.m[1] * f09 + this.m[3] * f12;
+			out[14] = -(this.m[0] * f08 - this.m[1] * f10 + this.m[2] * f12);
 
-			out.m[3] = -(this.m[1] * f13 - this.m[2] * f14 + this.m[3] * f15);
-			out.m[7] = this.m[0] * f13 - this.m[2] * f16 + this.m[3] * f17;
-			out.m[11] = -(this.m[0] * f14 - this.m[1] * f16 + this.m[3] * f18);
-			out.m[15] = this.m[0] * f15 - this.m[1] * f17 + this.m[2] * f18;
+			out[3] = -(this.m[1] * f13 - this.m[2] * f14 + this.m[3] * f15);
+			out[7] = this.m[0] * f13 - this.m[2] * f16 + this.m[3] * f17;
+			out[11] = -(this.m[0] * f14 - this.m[1] * f16 + this.m[3] * f18);
+			out[15] = this.m[0] * f15 - this.m[1] * f17 + this.m[2] * f18;
 
 			const det =
 				this.m[0] * out[0] +
@@ -1714,9 +1948,6 @@ function choose(list) {
 	return list[Math.floor(rand(0, list.length))];
 }
 
-// ------------------------------------------------------------
-// utils
-
 function deepCopy(input) {
 
 	if (typeof(input) !== "object" || input === null) {
@@ -1733,16 +1964,31 @@ function deepCopy(input) {
 
 }
 
-// ------------------------------------------------------------
-// game
+/*
+
+*666666*
+
+game       *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 // TODO: custom scene store
 // TODO: comp registry?
 // TODO: avoid comp fields direct assign / collision
+// TODO: in-source doc on the component system
 
 const DEF_GRAVITY = 980;
-const DEF_JUMP_FORCE = 480;
-const DEF_MAX_VEL = 960;
 const DEF_ORIGIN = "topleft";
 
 const game = {
@@ -1780,20 +2026,22 @@ function scene(name, cb) {
 		render: [],
 
 		// in game pool
-		objs: {},
+		objs: new Map(),
 		lastID: 0,
 		timers: {},
 		lastTimerID: 0,
 
 		// misc
 		layers: {},
-		camera: {
+		cam: {
 			pos: vec2(width() / 2, height() / 2),
 			scale: vec2(1, 1),
 			angle: 0,
+			shake: 0,
 			ignore: [],
 		},
 		gravity: DEF_GRAVITY,
+		camMousePos: vec2(0),
 
 	};
 
@@ -1848,7 +2096,7 @@ function layers(list, def) {
 }
 
 function camPos(...pos) {
-	const cam = curScene().camera;
+	const cam = curScene().cam;
 	if (pos.length > 0) {
 		cam.pos = vec2(...pos);
 	}
@@ -1856,7 +2104,7 @@ function camPos(...pos) {
 }
 
 function camScale(...scale) {
-	const cam = curScene().camera;
+	const cam = curScene().cam;
 	if (scale.length > 0) {
 		cam.scale = vec2(...scale);
 	}
@@ -1864,20 +2112,20 @@ function camScale(...scale) {
 }
 
 function camRot(angle) {
-	const cam = curScene().camera;
+	const cam = curScene().cam;
 	if (angle !== undefined) {
 		cam.angle = angle;
 	}
 	return cam.angle;
 }
 
-// TODO
 function camShake(intensity) {
-	// ...
+	const cam = curScene().cam;
+	cam.shake = intensity;
 }
 
 function camIgnore(layers) {
-	const cam = curScene().camera;
+	const cam = curScene().cam;
 	cam.ignore = layers;
 }
 
@@ -2005,7 +2253,7 @@ function add(comps) {
 
 	const scene = curScene();
 
-	scene.objs[scene.lastID] = obj;
+	scene.objs.set(scene.lastID, obj);
 	obj._sceneID = scene.lastID;
 	scene.lastID++;
 
@@ -2016,6 +2264,23 @@ function add(comps) {
 			e.cb(obj);
 		}
 	}
+
+	return obj;
+
+}
+
+function readd(obj) {
+
+	if (!obj.exists()) {
+		return;
+	}
+
+	const scene = curScene();
+
+	scene.objs.delete(obj._sceneID);
+	scene.objs.set(scene.lastID, obj);
+	obj._sceneID = scene.lastID;
+	scene.lastID++;
 
 	return obj;
 
@@ -2160,28 +2425,33 @@ function mouseRelease(f) {
 
 // get all objects with tag
 function get(t) {
+
 	const scene = curScene();
-	const list = [];
-	for (const id in scene.objs) {
-		const obj = scene.objs[id];
-		if (obj.is(t)) {
-			list.push(obj);
-		}
+	const objs = [...scene.objs.values()];
+
+	if (!t) {
+		return objs;
+	} else {
+		return objs.filter(obj => obj.is(t));
 	}
-	return list;
+
 }
 
 // apply a function to all objects currently in scene with tag t
 function every(t, f) {
 	if (typeof(t) === "function" && f === undefined) {
-		const scene = curScene();
-		for (const id in scene.objs) {
-			t(scene.objs[id]);
-		}
+		get().forEach(t);
 	} else {
-		for (const obj of get(t)) {
-			f(obj);
-		}
+		get(t).forEach(f);
+	}
+}
+
+// every but in reverse order
+function revery(t, f) {
+	if (typeof(t) === "function" && f === undefined) {
+		get().reverse().forEach(t);
+	} else {
+		get(t).reverse().forEach(f);
 	}
 }
 
@@ -2206,7 +2476,7 @@ function destroy(obj) {
 		}
 	}
 
-	delete scene.objs[obj._sceneID];
+	scene.objs.delete(obj._sceneID);
 	delete obj._sceneID;
 
 }
@@ -2216,6 +2486,15 @@ function destroyAll(t) {
 	every(t, (obj) => {
 		destroy(obj);
 	});
+}
+
+// get / set gravity
+function gravity(g) {
+	const scene = curScene()
+	if (g !== undefined) {
+		scene.gravity = g;
+	}
+	return scene.gravity;
 }
 
 // TODO: cleaner pause logic
@@ -2244,40 +2523,38 @@ function gameFrame(ignorePause) {
 
 	gfxFrameStart();
 
-	// objs
-	for (const id in scene.objs) {
-
-		const obj = scene.objs[id];
-
-		if (!obj) {
-			continue;
-		}
-
-		// update obj
+	// update every obj
+	revery((obj) => {
 		if (!obj.paused && doUpdate) {
-
 			obj.trigger("update");
-
 			for (const e of scene.events.update) {
 				if (obj.is(e.tag)) {
 					e.cb(obj);
 				}
 			}
-
 		}
+	});
 
-		const size = vec2(width(), height());
-		const cam = scene.camera;
+	// calculate camera matrix
+	const size = vec2(width(), height());
+	const cam = scene.cam;
+	const shake = vec2FromAngle(rand(0, Math.PI * 2)).scale(cam.shake);
 
-		const camMat = mat4()
-			.translate(size.scale(0.5))
-			.scale(cam.scale)
-			.rotateZ(cam.angle)
-			.translate(size.scale(-0.5))
-			.translate(cam.pos.scale(-1).add(size.scale(0.5)))
-			;
+	cam.shake = lerp(cam.shake, 0, 5);
 
-		// draw obj
+	const camMat = mat4()
+		.translate(size.scale(0.5))
+		.scale(cam.scale)
+		.rotateZ(cam.angle)
+		.translate(size.scale(-0.5))
+		.translate(cam.pos.scale(-1).add(size.scale(0.5)).add(shake))
+		;
+
+	scene.camMousePos = camMat.invert().multVec2(mousePos());
+
+	// draw every obj
+	every((obj) => {
+
 		if (!obj.hidden) {
 
 			pushTransform();
@@ -2298,7 +2575,7 @@ function gameFrame(ignorePause) {
 
 		}
 
-	}
+	});
 
 	if (doUpdate) {
 		for (const f of scene.action) {
@@ -2370,25 +2647,25 @@ function start(name, ...args) {
 			// run input checks & callbacks
 			for (const e of scene.events.keyDown) {
 				if (keyIsDown(e.key)) {
-					e.cb();
+					e.cb(e.key);
 				}
 			}
 
 			for (const e of scene.events.keyPress) {
 				if (keyIsPressed(e.key)) {
-					e.cb();
+					e.cb(e.key);
 				}
 			}
 
 			for (const e of scene.events.keyPressRep) {
 				if (keyIsPressedRep(e.key)) {
-					e.cb();
+					e.cb(e.key);
 				}
 			}
 
 			for (const e of scene.events.keyRelease) {
 				if (keyIsReleased(e.key)) {
-					e.cb();
+					e.cb(e.key);
 				}
 			}
 
@@ -2429,8 +2706,24 @@ function start(name, ...args) {
 
 }
 
-// --------------------------------
-// comps
+/*
+
+*7777777*
+
+comps      *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 // TODO: have velocity here?
 function pos(...args) {
@@ -2495,8 +2788,9 @@ function layer(z) {
 	return {
 		layer: z,
 		debugInfo() {
+			const scene = curScene();
 			return {
-				layer: this.layer,
+				layer: this.layer || scene.defLayer,
 			};
 		},
 	};
@@ -2507,15 +2801,15 @@ function layer(z) {
 // TODO: dynamic update when size change
 function area(p1, p2) {
 
+	const colliding = {};
+	const overlapping = {};
+
 	return {
 
 		area: {
 			p1: p1,
 			p2: p2,
 		},
-
-		_colliding: {},
-		_overlapping: {},
 
 		areaWidth() {
 			const { p1, p2 } = this._worldArea();
@@ -2555,6 +2849,8 @@ function area(p1, p2) {
 				z: 0.9,
 			});
 
+			const mpos = mousePos(this.layer || curScene().defLayer);
+
 			if (hoverInfo && hovered) {
 
 				const padding = vec2(6, 6).scale(1 / app.scale);
@@ -2565,7 +2861,7 @@ function area(p1, p2) {
 				const addLine = (txt) => {
 					const ftxt = fmtText(txt, {
 						size: 12 / app.scale,
-						pos: mousePos().add(vec2(padding.x, padding.y + bh)),
+						pos: mpos.add(vec2(padding.x, padding.y + bh)),
 						z: 1,
 					});
 					lines.push(ftxt);
@@ -2591,12 +2887,12 @@ function area(p1, p2) {
 				bh += padding.y * 2;
 
 				// background
-				drawRect(mousePos(), bw, bh, {
+				drawRect(mpos, bw, bh, {
 					color: rgba(0, 0, 0, 1),
 					z: 1,
 				});
 
-				drawRectStroke(mousePos(), bw, bh, {
+				drawRectStroke(mpos, bw, bh, {
 					width: (width - 2) / app.scale,
 					color: rgba(0, 1, 1, 1),
 					z: 1,
@@ -2639,7 +2935,7 @@ function area(p1, p2) {
 		},
 
 		isHovered() {
-			return this.hasPt(mousePos());
+			return this.hasPt(mousePos(this.layer || curScene().defLayer));
 		},
 
 		// push object out of other solid objects
@@ -2648,6 +2944,10 @@ function area(p1, p2) {
 			const targets = [];
 
 			every((other) => {
+
+				if (other === this) {
+					return;
+				}
 
 				if (!other.solid) {
 					return;
@@ -2712,19 +3012,19 @@ function area(p1, p2) {
 				if (this === obj) {
 					return;
 				}
-				if (this._colliding[obj._sceneID]) {
+				if (colliding[obj._sceneID]) {
 					return;
 				}
 				if (this.isCollided(obj)) {
 					f(obj);
-					this._colliding[obj._sceneID] = obj;
+					colliding[obj._sceneID] = obj;
 				}
 			});
 
-			for (const id in this._colliding) {
-				const obj = this._colliding[id];
+			for (const id in colliding) {
+				const obj = colliding[id];
 				if (!this.isCollided(obj)) {
-					delete this._colliding[id];
+					delete colliding[id];
 				}
 			}
 
@@ -2743,19 +3043,19 @@ function area(p1, p2) {
 				if (this === obj) {
 					return;
 				}
-				if (this._overlapping[obj._sceneID]) {
+				if (overlapping[obj._sceneID]) {
 					return;
 				}
 				if (this.isOverlapped(obj)) {
 					f(obj);
-					this._overlapping[obj._sceneID] = obj;
+					overlapping[obj._sceneID] = obj;
 				}
 			});
 
-			for (const id in this._overlapping) {
-				const obj = this._overlapping[id];
+			for (const id in overlapping) {
+				const obj = overlapping[id];
 				if (!this.isOverlapped(obj)) {
-					delete this._overlapping[id];
+					delete overlapping[id];
 				}
 			}
 
@@ -2771,12 +3071,6 @@ function area(p1, p2) {
 		// TODO: use matrix mult for more accuracy and rotation?
 		_worldArea() {
 
-// 			const curFrame = time();
-
-// 			if (this._worldAreaCache?.frame === curFrame) {
-// 				return this._worldAreaCache.value;
-// 			}
-
 			const a = this.area;
 			const pos = this.pos || vec2(0);
 			const scale = this.scale || vec2(1);
@@ -2787,11 +3081,6 @@ function area(p1, p2) {
 				p1: vec2(Math.min(p1.x, p2.x), Math.min(p1.y, p2.y)),
 				p2: vec2(Math.max(p1.x, p2.x), Math.max(p1.y, p2.y)),
 			};
-
-// 			this._worldAreaCache = {
-// 				frame: curFrame,
-// 				value: area,
-// 			};
 
 			return area;
 
@@ -2853,25 +3142,34 @@ function sprite(id, conf = {}) {
 		return;
 	}
 
-	const q = spr.frames[0];
+	const q = { ...spr.frames[0] };
+
+	if (conf.quad) {
+		q.x += conf.quad.x * q.w;
+		q.y += conf.quad.y * q.h;
+		q.w *= conf.quad.w;
+		q.h *= conf.quad.h;
+	}
+
 	const w = spr.tex.width * q.w;
 	const h = spr.tex.height * q.h;
+	let timer = 0;
+	let looping = false;
+	const events = {};
 
 	return {
 
-		_spriteID: id,
-		_animTimer: 0,
+		spriteID: id,
 		curAnim: undefined,
-		_animLooping: false,
 		animSpeed: conf.animSpeed || 0.1,
 		frame: conf.frame || 0,
 		width: w,
 		height: h,
-		_animEvents: {},
+		quad: conf.quad || quad(0, 0, 1, 1),
 
 		add() {
 			// add default area
-			if (!this.area) {
+			if (!this.area && !conf.noArea) {
 				this.use(getAreaFromSize(this.width, this.height, this.origin));
 			}
 		},
@@ -2881,13 +3179,14 @@ function sprite(id, conf = {}) {
 			const scene = curScene();
 			const q = spr.frames[this.frame];
 
-			drawSprite(this._spriteID, {
+			drawSprite(this.spriteID, {
 				pos: this.pos,
 				scale: this.scale,
 				rot: this.angle,
 				color: this.color,
 				frame: this.frame,
 				origin: this.origin,
+				quad: this.quad,
 				z: scene.layers[this.layer || scene.defLayer],
 			});
 
@@ -2902,27 +3201,27 @@ function sprite(id, conf = {}) {
 			const speed = this.animSpeed;
 			const anim = spr.anims[this.curAnim];
 
-			this._animTimer += dt();
+			timer += dt();
 
-			if (this._animTimer >= this.animSpeed) {
+			if (timer >= this.animSpeed) {
 				// TODO: anim dir
 				this.frame++;
 				if (this.frame > anim[1]) {
-					if (this._animLooping) {
+					if (looping) {
 						this.frame = anim[0];
 					} else {
 						this.frame--;
 						this.stop();
 					}
 				}
-				this._animTimer -= this.animSpeed;
+				timer -= this.animSpeed;
 			}
 
 		},
 
 		play(name, loop) {
 
-			const anim = assets.sprites[this._spriteID].anims[name];
+			const anim = assets.sprites[this.spriteID].anims[name];
 
 			if (!anim) {
 				console.error(`anim not found: ${name}`);
@@ -2935,10 +3234,10 @@ function sprite(id, conf = {}) {
 
 			this.curAnim = name;
 			this.frame = anim[0];
-			this._animLooping = loop === undefined ? true : loop;
+			looping = loop === undefined ? true : loop;
 
-			if (this._animEvents[name]?.play) {
-				this._animEvents[name].play();
+			if (events[name]?.play) {
+				events[name].play();
 			}
 
 		},
@@ -2947,24 +3246,24 @@ function sprite(id, conf = {}) {
 			if (!this.curAnim) {
 				return;
 			}
-			if (this._animEvents[this.curAnim]?.end) {
-				this._animEvents[this.curAnim].end();
+			if (events[this.curAnim]?.end) {
+				events[this.curAnim].end();
 			}
 			this.curAnim = undefined;
 		},
 
 		onAnimPlay(name, cb) {
-			if (!this._animEvents[name]) {
-				this._animEvents[name] = {};
+			if (!events[name]) {
+				events[name] = {};
 			}
-			this._animEvents[name].play = cb;
+			events[name].play = cb;
 		},
 
 		onAnimEnd(name, cb) {
-			if (!this._animEvents[name]) {
-				this._animEvents[name] = {};
+			if (!events[name]) {
+				events[name] = {};
 			}
-			this._animEvents[name].end = cb;
+			events[name].end = cb;
 		},
 
 		debugInfo() {
@@ -2987,6 +3286,27 @@ function text(t, size, conf = {}) {
 		text: t,
 		textSize: size,
 		font: conf.font,
+
+		add() {
+			// add default area
+			if (!this.area && !conf.noArea) {
+				const scene = curScene();
+				const ftext = fmtText(this.text + "", {
+					pos: this.pos,
+					scale: this.scale,
+					rot: this.angle,
+					size: this.textSize,
+					origin: this.origin,
+					color: this.color,
+					font: this.font,
+					width: conf.width,
+					z: scene.layers[this.layer || scene.defLayer],
+				});
+				this.width = ftext.width / (this.scale?.x || 1);
+				this.height = ftext.height / (this.scale?.y || 1);
+				this.use(getAreaFromSize(this.width, this.height, this.origin));
+			}
+		},
 
 		draw() {
 
@@ -3015,7 +3335,7 @@ function text(t, size, conf = {}) {
 
 }
 
-function rect(w, h) {
+function rect(w, h, conf = {}) {
 
 	return {
 
@@ -3024,7 +3344,7 @@ function rect(w, h) {
 
 		add() {
 			// add default area
-			if (!this.area) {
+			if (!this.area && !conf.noArea) {
 				this.use(getAreaFromSize(this.width, this.height, this.origin));
 			}
 		},
@@ -3062,48 +3382,61 @@ function timer() {
 	};
 }
 
+// maximum y velocity with body()
+const DEF_MAX_VEL = 960;
+const DEF_JUMP_FORCE = 480;
+
 function body(conf = {}) {
 
 	return {
 
 		velY: 0,
-		jumpForce: conf.jumpForce !== undefined ? conf.jumpForce : DEF_JUMP_FORCE,
+		jumpForce: conf.jumpForce !== null ? conf.jumpForce : DEF_JUMP_FORCE,
 		maxVel: conf.maxVel || DEF_MAX_VEL,
-		curPlatform: undefined,
+		curPlatform: null,
 
 		update() {
 
 			this.move(0, this.velY);
 
 			const targets = this.resolve();
+			let justOff = false;
 
+			// check if loses current platform
 			if (this.curPlatform) {
 				if (!this.curPlatform.exists() || !this.isCollided(this.curPlatform)) {
-					this.curPlatform = undefined;
+					this.curPlatform = null;
+					justOff = true;
 				}
 			}
 
 			if (!this.curPlatform) {
+
 				this.velY = Math.min(this.velY + gravity() * dt(), this.maxVel);
+
+				// check if grounded to a new platform
 				for (const target of targets) {
 					if (target.side === "bottom" && this.velY > 0) {
 						this.curPlatform = target.obj;
-						this.trigger("grounded");
+						if (!justOff) {
+							this.trigger("grounded");
+						}
 						this.velY = 0;
 					} else if (target.side === "top" && this.velY < 0) {
 						this.velY = 0;
 					}
 				}
+
 			}
 
 		},
 
 		grounded() {
-			return this.curPlatform !== undefined;
+			return this.curPlatform !== null;
 		},
 
 		jump(force) {
-			this.curPlatform = undefined;
+			this.curPlatform = null;
 			this.velY = -force || -this.jumpForce;
 		},
 
@@ -3111,8 +3444,24 @@ function body(conf = {}) {
 
 }
 
-// --------------------------------
-// Debug
+/*
+
+*8888888*
+
+debug     *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 function fps() {
 	return 1.0 / dt();
@@ -3120,7 +3469,7 @@ function fps() {
 
 function objCount() {
 	const scene = curScene();
-	return Object.keys(scene.objs).length;
+	return scene.objs.size;
 }
 
 function pause(b) {
@@ -3143,13 +3492,24 @@ function log(msg) {
 	console.log(msg);
 }
 
-function gravity(g) {
-	const scene = curScene()
-	if (g !== undefined) {
-		scene.gravity = g;
-	}
-	return scene.gravity;
-}
+/*
+
+*99999999*
+
+helper    *                     .            ~       +    .
+    .           .            ~          +
+            +          .                          .
+              .                      .
+ @      .        ~           .                 @            +
+                                       +
+     .                                                 ~
+         ~            +           +
+              +                .      .               +
+      ~                   .                 +               ~
+   .       @        .                   ~           .
+                               .                           .
+
+*/
 
 function addLevel(arr, conf = {}) {
 
@@ -3157,33 +3517,37 @@ function addLevel(arr, conf = {}) {
 	const offset = vec2(conf.pos);
 	let longRow = 0;
 
-	arr.forEach((row, i) => {
+	const level = {
 
-		if (typeof(row) === "string") {
-			row = row.split("");
-		}
+		getPos(...p) {
+			p = vec2(...p);
+			return vec2(
+				offset.x + p.x * conf.width,
+				offset.y + p.y * conf.height
+			);
+		},
 
-		longRow = Math.max(row.length, longRow);
-
-		row.forEach((tile, j) => {
+		spawn(sym, p) {
 
 			const comps = (() => {
-				if (conf[tile]) {
-					if (typeof(conf[tile]) === "function") {
-						return conf[tile]();
-					} else if (Array.isArray(conf[tile])) {
-						return [...conf[tile]];
+				if (Array.isArray(sym)) {
+					return sym;
+				} else if (conf[sym]) {
+					if (typeof(conf[sym]) === "function") {
+						return conf[sym]();
+					} else if (Array.isArray(conf[sym])) {
+						return [...conf[sym]];
 					}
 				} else if (conf.any) {
-					return conf.any(tile);
+					return conf.any(sym);
 				}
 			})();
 
 			if (comps) {
 
 				comps.push(pos(
-					offset.x + j * conf.width,
-					offset.y + i * conf.height
+					offset.x + p.x * conf.width,
+					offset.y + p.y * conf.height
 				));
 
 				const obj = add(comps);
@@ -3192,7 +3556,7 @@ function addLevel(arr, conf = {}) {
 
 				obj.use({
 
-					gridPos: vec2(j, i),
+					gridPos: p.clone(),
 
 					setGridPos(p) {
 						this.gridPos = p.clone();
@@ -3222,33 +3586,37 @@ function addLevel(arr, conf = {}) {
 
 			}
 
-		});
-
-	});
-
-	const level = {
-		getPos(...p) {
-			p = vec2(...p);
-			return vec2(
-				offset.x + p.x * conf.width,
-				offset.y + p.y * conf.height
-			);
 		},
-		getObj() {
-			// ...
-		},
+
 		width() {
 			return longRow * conf.width;
 		},
+
 		height() {
 			return arr.length * conf.height;
 		},
+
 		destroy() {
 			for (const obj of objs) {
 				destroy(obj);
 			}
 		},
+
 	};
+
+	arr.forEach((row, i) => {
+
+		if (typeof(row) === "string") {
+			row = row.split("");
+		}
+
+		longRow = Math.max(row.length, longRow);
+
+		row.forEach((sym, j) => {
+			level.spawn(sym, vec2(j, i));
+		});
+
+	});
 
 	return level;
 
@@ -3261,6 +3629,7 @@ kaboom.start = start;
 // asset load
 kaboom.loadRoot = loadRoot;
 kaboom.loadSprite = loadSprite;
+kaboom.loadAseprite = loadAseprite;
 kaboom.loadSound = loadSound;
 kaboom.loadFont = loadFont;
 kaboom.getSprite = getSprite;
@@ -3280,11 +3649,13 @@ kaboom.layers = layers;
 kaboom.camPos = camPos;
 kaboom.camScale = camScale;
 kaboom.camRot = camRot;
+kaboom.camShake = camShake;
 kaboom.camIgnore = camIgnore;
 kaboom.gravity = gravity;
 
 // obj
 kaboom.add = add;
+kaboom.readd = readd;
 kaboom.destroy = destroy;
 kaboom.destroyAll = destroyAll;
 kaboom.get = get;
@@ -3347,6 +3718,7 @@ kaboom.randl = randl;
 kaboom.vec2 = vec2;
 kaboom.rgb = rgb;
 kaboom.rgba = rgba;
+kaboom.quad = quad;
 kaboom.choose = choose;
 kaboom.chance = chance;
 kaboom.lerp = lerp;
