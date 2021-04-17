@@ -171,7 +171,7 @@ k.scene('main', () => {
   function spawnFlame () {
     spawn([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.x, ship.pos.y + ship.areaHeight()),
+      k.pos(ship.pos.x, ship.pos.y + ship.height),
       k.rotate(ship.angle),
       k.color(1, 1, 0),
       k.layer('background'),
@@ -213,7 +213,7 @@ k.scene('main', () => {
   k.action('star', star => {
     star.pos.y -= star.getAge() / gravity.value * star.color.a
 
-    if (star.pos.y < -star.areaHeight()) {
+    if (star.pos.y < -star.height) {
       k.destroy(star)
       spawnStar()
     }
@@ -250,13 +250,13 @@ k.scene('main', () => {
   })
 
   k.keyDown('left', () => {
-    if (ship.pos.x > 0) {
+    if (ship.pos.x - ship.width > 0) {
       ship.move(-MOVE.X, MOVE.Y)
     }
   })
 
   k.keyDown('right', () => {
-    if (ship.pos.x < k.width()) {
+    if (ship.pos.x + ship.width < k.width()) {
       ship.move(MOVE.X, MOVE.Y)
     }
   })
