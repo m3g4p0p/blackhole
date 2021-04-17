@@ -2,6 +2,7 @@ const k = window.k = window.kaboom
 let difficulty = 1
 let lastScore = 0
 let highscore = 0
+let mouseControl = false
 
 const MOVE = {
   X: 100,
@@ -92,6 +93,13 @@ k.scene('start', () => {
   k.keyPress('down', () => {
     difficulty = Math.max(1, difficulty - 1)
     updateInfo()
+  })
+
+  k.keyPress('m', () => {
+    document.body.classList.toggle(
+      'mouse-control',
+      mouseControl = !mouseControl
+    )
   })
 
   updateInfo()
@@ -193,14 +201,34 @@ k.scene('main', () => {
     ])
   }
 
+  function moveShip () {
+    const mousePos = k.mousePos()
+    const width = k.width()
+
+    if ((
+      mousePos.x < 0 &&
+      ship.pos.x < ship.width
+    ) || (
+      mousePos.x > width &&
+      ship.pos.x > width - ship.width
+    )) return
+
+    const delta = Math.max(-MOVE.X, Math.min(MOVE.X, k.mousePos().sub(ship.pos).x))
+    ship.move(delta, MOVE.Y * Math.abs(delta) / MOVE.X)
+  }
+
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
       lastScore = score.value
-      k.go('death')
-    } else {
-      rotate()
-      adjustCam()
+      return k.go('death')
     }
+
+    if (mouseControl) {
+      moveShip()
+    }
+
+    rotate()
+    adjustCam()
   })
 
   ship.collides('boost', boost => {

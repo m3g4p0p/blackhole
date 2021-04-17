@@ -10,3 +10,7 @@ body {
 canvas {
   border: 3px solid white;
 }
+
+.mouse-control canvas {
+  cursor: crosshair;
+}
