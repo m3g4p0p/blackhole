@@ -5,6 +5,9 @@
     },
     "globals": "kaboom"
   },
+  "scripts": {
+    "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
+  },
   "devDependencies": {
     "css-loader": "^5.2.1",
     "html-webpack-plugin": "^5.3.1",
