@@ -95,13 +95,6 @@ k.scene('start', () => {
     updateInfo()
   })
 
-  k.keyPress('m', () => {
-    document.body.classList.toggle(
-      'mouse-control',
-      mouseControl = !mouseControl
-    )
-  })
-
   updateInfo()
 })
 
@@ -201,7 +194,7 @@ k.scene('main', () => {
     ])
   }
 
-  function moveShip () {
+  function followMouse () {
     const mousePos = k.mousePos()
     const width = k.width()
 
@@ -224,7 +217,7 @@ k.scene('main', () => {
     }
 
     if (mouseControl) {
-      moveShip()
+      followMouse()
     }
 
     rotate()
@@ -287,6 +280,13 @@ k.scene('main', () => {
     if (ship.pos.x + ship.width < k.width()) {
       ship.move(MOVE.X, MOVE.Y)
     }
+  })
+
+  k.mouseClick(() => {
+    document.body.classList.toggle(
+      'mouse-control',
+      mouseControl = !mouseControl
+    )
   })
 
   k.on('destroy', 'boost', () => {
