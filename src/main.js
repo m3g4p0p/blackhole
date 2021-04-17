@@ -37,6 +37,10 @@ function spawn (components) {
   }])
 }
 
+function join (lines, spacing = 1) {
+  return lines.join('\n'.repeat(spacing + 1))
+}
+
 function addInfo (components, x, y, s = 1) {
   const width = k.width()
   const height = k.height()
@@ -61,11 +65,17 @@ k.scene('start', () => {
   ])
 
   function updateInfo () {
-    info.text = `Difficulty: ${difficulty}\n\nHighscore: ${highscore}`
+    info.text = join([
+      `Difficulty: ${difficulty}`,
+      `Highscore: ${highscore}`
+    ])
   }
 
   k.add([
-    k.text('Press SPACE to start falling!'),
+    k.text(join([
+      'Press SPACE to start falling!',
+      'Use UP and DOWN to adjust the difficulty.'
+    ], 2)),
     k.pos(200, 200)
   ])
 
@@ -96,7 +106,8 @@ k.scene('main', () => {
   ], 'game')
 
   addInfo([
-    k.text('G')
+    k.text('G'),
+    k.origin('botright')
   ], -10, -10, 0.5)
 
   const score = addInfo([
@@ -115,7 +126,8 @@ k.scene('main', () => {
     k.pos(k.width() / 2, k.height() / 1.5),
     k.rect(SIZE.SHIP.X, SIZE.SHIP.Y),
     k.color(1, 1, 1),
-    k.rotate(0)
+    k.rotate(0),
+    k.origin('center')
   ])
 
   function addScore (value) {
@@ -147,6 +159,8 @@ k.scene('main', () => {
         k.rand(0, k.height() - SIZE.BOOST.Y)
       ),
       k.color(0, 1, 0.5),
+      k.rotate(0),
+      k.origin('center'),
       'boost'
     ])
 
@@ -160,6 +174,7 @@ k.scene('main', () => {
       k.rotate(ship.angle),
       k.color(1, 1, 0),
       k.layer('background'),
+      k.origin('center'),
       'flame'
     ])
   }
@@ -212,6 +227,10 @@ k.scene('main', () => {
     }
   })
 
+  k.action('boost', boost => {
+    boost.angle -= k.dt() * gravity.value / 1000
+  })
+
   k.gravity(INITIAL_GRAVITY)
   k.camIgnore(['info'])
 
@@ -254,7 +273,10 @@ k.scene('main', () => {
 
 k.scene('death', () => {
   k.add([
-    k.text(`Gravity ate you up!\n\nYour score was ${lastScore}.`),
+    k.text(join([
+      'Gravity ate you up!',
+      `Your score was ${lastScore}.`
+    ], 2)),
     k.pos(200, 200)
   ])
 
