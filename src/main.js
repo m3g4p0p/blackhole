@@ -74,6 +74,18 @@ function unlessWrecked (fn) {
   return (...args) => !isWrecked && fn(...args)
 }
 
+function withAgeDelta (fn, scale) {
+  return (object) => {
+    const delta = 1 - object.getAge() / scale
+
+    if (delta > 0) {
+      return fn(object, delta)
+    }
+
+    return k.destroy(object)
+  }
+}
+
 k.init({
   width: SIZE.GAME.X,
   height: SIZE.GAME.Y
@@ -163,8 +175,8 @@ k.scene('main', () => {
     k.gravity(gravity.value)
   }
 
-  function addGravitySpin (object, downScale) {
-    object.angle += k.dt() * gravity.value / downScale
+  function addGravitySpin (object, scale) {
+    object.angle += k.dt() * gravity.value / scale
   }
 
   function rotate () {
@@ -205,6 +217,18 @@ k.scene('main', () => {
     ])
   }
 
+  function spanFire () {
+    spawn([
+      k.rect(ship.width, ship.width),
+      k.pos(ship.pos.x, ship.pos.y),
+      k.rotate(0),
+      k.color(1, 0, 0),
+      k.layer('background'),
+      k.origin('center'),
+      'fire'
+    ])
+  }
+
   function spawnStar (y = 0) {
     spawn([
       k.rect(SIZE.STAR.X, SIZE.STAR.Y),
@@ -225,12 +249,14 @@ k.scene('main', () => {
         k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
       ),
       k.pos(k.rand(0, k.width()), -k.height()),
+      k.pos(ship.pos.x, -k.height()),
       k.color(1, 1, 1),
       k.rotate(0),
       k.origin('center'),
       k.body(),
       'debris',
-      { direction: k.rand(-1, 1) }
+      { direction: k.rand(-1, 1) },
+      { direction: 0 }
     ])
   }
 
@@ -246,7 +272,7 @@ k.scene('main', () => {
       ship.pos.x > width - ship.width
     )) return
 
-    const delta = cap(MOVE.SHIP.X, k.mousePos().sub(ship.pos).x)
+    const delta = cap(k.mousePos().sub(ship.pos).x, MOVE.SHIP.X)
     ship.move(delta, MOVE.SHIP.Y * Math.abs(delta) / MOVE.SHIP.X)
   }
 
@@ -258,7 +284,7 @@ k.scene('main', () => {
 
     if (isWrecked) {
       addGravitySpin(ship, SPIN.DEBRIS)
-      return spawnFlame()
+      return spanFire()
     }
 
     if (mouseControl) {
@@ -290,14 +316,14 @@ k.scene('main', () => {
     }
   })
 
-  k.action('flame', flame => {
-    const delta = 1 - flame.getAge() / 1000
+  k.action('flame', withAgeDelta((flame, delta) => {
     flame.color = k.rgba(1, delta, 0, delta)
+  }, 1000))
 
-    if (delta <= 0) {
-      k.destroy(flame)
-    }
-  })
+  k.action('fire', withAgeDelta((fire, delta) => {
+    fire.color = k.rgba(delta, 0, 0, delta)
+    fire.angle += k.dt()
+  }, 500))
 
   k.action('boost', boost => {
     addGravitySpin(boost, SPIN.BOOST)
