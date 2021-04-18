@@ -3,10 +3,11 @@ let difficulty = 1
 let lastScore = 0
 let highscore = 0
 let mouseControl = false
+let isWrecked = false
 
 const MOVE = {
-  X: 100,
-  Y: 10
+  SHIP: { X: 100, Y: 10 },
+  DEBRIS: { X: 100, Y: 100 }
 }
 
 const SIZE = {
@@ -14,16 +15,26 @@ const SIZE = {
   SHIP: { X: 20, Y: 40 },
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },
-  STAR: { X: 5, Y: 5 }
+  STAR: { X: 5, Y: 5 },
+  DEBRIS: {
+    MIN: { X: 15, Y: 15 },
+    MAX: { X: 30, Y: 30 }
+  }
 }
 
 const TIME = {
-  BOOST: 5
+  BOOST: 5,
+  DEBRIS: 3
 }
 
 const FACTOR = {
   GRAVITY: 100,
   SCORE: 20
+}
+
+const SPIN = {
+  BOOST: -1000,
+  DEBRIS: 500
 }
 
 const INITIAL_GRAVITY = 1000
@@ -43,6 +54,10 @@ function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
 }
 
+function cap (value, absMax) {
+  return Math.max(absMax, Math.abs(value)) * Math.sign(value)
+}
+
 function addInfo (components, x, y, s = 1) {
   const width = k.width()
   const height = k.height()
@@ -53,6 +68,10 @@ function addInfo (components, x, y, s = 1) {
     k.layer('info'),
     ...components
   ])
+}
+
+function unlessWrecked (fn) {
+  return (...args) => !isWrecked && fn(...args)
 }
 
 k.init({
@@ -100,6 +119,7 @@ k.scene('start', () => {
 
 k.scene('main', () => {
   lastScore = 0
+  isWrecked = false
 
   k.layers([
     'info',
@@ -141,6 +161,10 @@ k.scene('main', () => {
     gravity.value = Math.max(INITIAL_GRAVITY, gravity.value + value)
     gravity.height = (gravity.value - INITIAL_GRAVITY) / 100
     k.gravity(gravity.value)
+  }
+
+  function addGravitySpin (object, downScale) {
+    object.angle += k.dt() * gravity.value / downScale
   }
 
   function rotate () {
@@ -194,6 +218,22 @@ k.scene('main', () => {
     ])
   }
 
+  function spawnDebris () {
+    k.add([
+      k.rect(
+        k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X),
+        k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
+      ),
+      k.pos(k.rand(0, k.width()), -k.height()),
+      k.color(1, 1, 1),
+      k.rotate(0),
+      k.origin('center'),
+      k.body(),
+      'debris',
+      { direction: k.rand(-1, 1) }
+    ])
+  }
+
   function followMouse () {
     const mousePos = k.mousePos()
     const width = k.width()
@@ -206,14 +246,19 @@ k.scene('main', () => {
       ship.pos.x > width - ship.width
     )) return
 
-    const delta = Math.max(-MOVE.X, Math.min(MOVE.X, k.mousePos().sub(ship.pos).x))
-    ship.move(delta, MOVE.Y * Math.abs(delta) / MOVE.X)
+    const delta = cap(MOVE.SHIP.X, k.mousePos().sub(ship.pos).x)
+    ship.move(delta, MOVE.SHIP.Y * Math.abs(delta) / MOVE.SHIP.X)
   }
 
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
       lastScore = score.value
       return k.go('death')
+    }
+
+    if (isWrecked) {
+      addGravitySpin(ship, SPIN.DEBRIS)
+      return spawnFlame()
     }
 
     if (mouseControl) {
@@ -229,6 +274,11 @@ k.scene('main', () => {
     ship.jump(gravity.value / 2)
     addScore(difficulty * FACTOR.SCORE)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
+  })
+
+  ship.collides('debris', debris => {
+    isWrecked = true
+    k.destroy(debris)
   })
 
   k.action('star', star => {
@@ -250,7 +300,26 @@ k.scene('main', () => {
   })
 
   k.action('boost', boost => {
-    boost.angle -= k.dt() * gravity.value / 1000
+    addGravitySpin(boost, SPIN.BOOST)
+  })
+
+  k.on('destroy', 'boost', () => {
+    k.wait(TIME.BOOST, spawnBoost)
+  })
+
+  k.action('debris', debris => {
+    if (debris.pos.y > k.height() + debris.height) {
+      return k.destroy(debris)
+    }
+
+    addGravitySpin(debris, SPIN.DEBRIS * Math.sign(
+      debris.width - debris.height
+    ))
+
+    debris.move(
+      debris.direction * MOVE.DEBRIS.X,
+      -MOVE.DEBRIS.Y / difficulty - debris.area.p1.dist(debris.area.p2)
+    )
   })
 
   k.gravity(INITIAL_GRAVITY)
@@ -261,26 +330,26 @@ k.scene('main', () => {
     addGravity(FACTOR.GRAVITY)
   })
 
-  k.keyPress('space', () => {
+  k.keyPress('space', unlessWrecked(() => {
     if (ship.pos.y < 0) {
       return
     }
 
     ship.jump()
     spawnFlame()
-  })
+  }))
 
-  k.keyDown('left', () => {
+  k.keyDown('left', unlessWrecked(() => {
     if (ship.pos.x - ship.width > 0) {
-      ship.move(-MOVE.X, MOVE.Y)
+      ship.move(-MOVE.SHIP.X, MOVE.SHIP.Y)
     }
-  })
+  }))
 
-  k.keyDown('right', () => {
+  k.keyDown('right', unlessWrecked(() => {
     if (ship.pos.x + ship.width < k.width()) {
-      ship.move(MOVE.X, MOVE.Y)
+      ship.move(MOVE.SHIP.X, MOVE.SHIP.Y)
     }
-  })
+  }))
 
   k.mouseClick(() => {
     document.body.classList.toggle(
@@ -289,10 +358,7 @@ k.scene('main', () => {
     )
   })
 
-  k.on('destroy', 'boost', () => {
-    k.wait(TIME.BOOST, spawnBoost)
-  })
-
+  k.loop(TIME.DEBRIS, spawnDebris)
   k.wait(TIME.BOOST, spawnBoost)
 
   for (let i = 0; i < STARS; i++) {
