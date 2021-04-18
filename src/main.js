@@ -245,17 +245,13 @@ k.scene('main', () => {
         k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X),
         k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
       ),
-      window.debug
-        ? k.pos(ship.pos.x, -k.height())
-        : k.pos(k.rand(0, k.width()), -k.height()),
+      k.pos(k.rand(0, k.width()), -k.height()),
       k.color(1, 1, 1),
       k.rotate(0),
       k.origin('center'),
       k.body(),
       'debris',
-      window.debug
-        ? { direction: 0 }
-        : { direction: k.rand(-1, 1) }
+      { direction: k.rand(0, 1) }
     ])
   }
 
@@ -341,8 +337,12 @@ k.scene('main', () => {
     ))
 
     debris.move(
-      debris.direction * MOVE.DEBRIS.X,
-      -MOVE.DEBRIS.Y / difficulty - debris.area.p1.dist(debris.area.p2)
+      debris.direction *
+      MOVE.DEBRIS.X *
+      Math.sign(k.width() / 2 - debris.pos.x),
+      -MOVE.DEBRIS.Y /
+      difficulty -
+      debris.area.p1.dist(debris.area.p2)
     )
   })
 
