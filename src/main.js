@@ -35,6 +35,12 @@ const SPIN = {
   DEBRIS: 500
 }
 
+const DECAY = {
+  FLAME: 1000,
+  FIRE: 500,
+  TAIL: 200
+}
+
 const INITIAL_GRAVITY = 1000
 const STARS = 10
 const CAM_THRESHOLD = 20
@@ -176,7 +182,7 @@ k.scene('main', () => {
     return (...args) => !isWrecked && fn(...args)
   }
 
-  function rotate () {
+  function rotateShip () {
     const width = k.width()
     ship.angle = (ship.pos.x - width / 2) / -width
   }
@@ -205,7 +211,7 @@ k.scene('main', () => {
   function spawnFlame () {
     spawn([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.x, ship.pos.y + ship.height),
+      k.pos(ship.pos.x, ship.pos.y + ship.height / 2),
       k.rotate(ship.angle),
       k.color(1, 1, 0),
       k.layer('background'),
@@ -214,7 +220,7 @@ k.scene('main', () => {
     ])
   }
 
-  function spanFire () {
+  function spawnFire () {
     spawn([
       k.rect(ship.width, ship.width),
       k.pos(ship.pos.x, ship.pos.y),
@@ -239,19 +245,35 @@ k.scene('main', () => {
     ])
   }
 
+  function spawnTail (debris) {
+    spawn([
+      k.scale(1),
+      k.color(0.5, 0.5, 0.5),
+      k.pos(debris.pos),
+      k.rect(debris.width, debris.height),
+      k.rotate(debris.angle),
+      k.origin('center'),
+      k.layer('background'),
+      'tail'
+    ])
+  }
+
   function spawnDebris () {
+    const posX = k.rand(0, k.width())
+    const direction = k.rand(0, Math.sign(k.width() / 2 - posX))
+
     k.add([
       k.rect(
         k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X),
         k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
       ),
-      k.pos(k.rand(0, k.width()), -k.height()),
+      k.pos(posX, -k.height()),
       k.color(1, 1, 1),
       k.rotate(0),
       k.origin('center'),
       k.body(),
       'debris',
-      { direction: k.rand(0, 1) }
+      { direction }
     ])
   }
 
@@ -271,6 +293,14 @@ k.scene('main', () => {
     ship.move(delta, MOVE.SHIP.Y * Math.abs(delta) / MOVE.SHIP.X)
   }
 
+  function sustainFlame () {
+    const lastFlame = k.get('flame').pop()
+
+    if (lastFlame && lastFlame.getAge() > DECAY.FLAME / 20) {
+      spawnFlame()
+    }
+  }
+
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
       return k.go('death', score.value)
@@ -278,15 +308,19 @@ k.scene('main', () => {
 
     if (isWrecked) {
       addGravitySpin(ship, SPIN.DEBRIS)
-      return spanFire()
+      return spawnFire()
     }
 
     if (mouseControl) {
       followMouse()
     }
 
-    rotate()
+    if (ship.velY < 0) {
+      sustainFlame()
+    }
+
     adjustCam()
+    rotateShip()
   })
 
   ship.collides('boost', boost => {
@@ -298,6 +332,8 @@ k.scene('main', () => {
 
   ship.collides('debris', debris => {
     isWrecked = true
+
+    ship.jump(INITIAL_GRAVITY)
     k.destroy(debris)
   })
 
@@ -312,12 +348,17 @@ k.scene('main', () => {
 
   k.action('flame', withAgeDelta((flame, delta) => {
     flame.color = k.rgba(1, delta, 0, delta)
-  }, 1000))
+  }, DECAY.FLAME))
 
   k.action('fire', withAgeDelta((fire, delta) => {
     fire.color = k.rgba(delta - k.rand(0, delta), 0, 0, delta)
     fire.angle += k.dt()
-  }, 500))
+  }, DECAY.FIRE))
+
+  k.action('tail', withAgeDelta((tail, delta) => {
+    tail.color = k.rgba(0.5, 0.5, 0.5, delta)
+    tail.scale = k.vec2(delta, delta)
+  }, DECAY.TAIL))
 
   k.action('boost', boost => {
     addGravitySpin(boost, SPIN.BOOST)
@@ -338,12 +379,13 @@ k.scene('main', () => {
 
     debris.move(
       debris.direction *
-      MOVE.DEBRIS.X *
-      Math.sign(k.width() / 2 - debris.pos.x),
+      MOVE.DEBRIS.X,
       -MOVE.DEBRIS.Y /
       difficulty -
       debris.area.p1.dist(debris.area.p2)
     )
+
+    spawnTail(debris)
   })
 
   k.gravity(INITIAL_GRAVITY)
