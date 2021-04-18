@@ -15,8 +15,8 @@ const SIZE = {
   FLAME: { X: 20, Y: 5 },
   STAR: { X: 5, Y: 5 },
   DEBRIS: {
-    MIN: { X: 15, Y: 15 },
-    MAX: { X: 30, Y: 30 }
+    MIN: { X: 10, Y: 10 },
+    MAX: { X: 25, Y: 25 }
   }
 }
 
@@ -303,7 +303,7 @@ k.scene('main', () => {
 
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
-      return k.go('death', score.value)
+      return k.go('death', score.value, isWrecked)
     }
 
     if (isWrecked) {
@@ -351,7 +351,9 @@ k.scene('main', () => {
   }, DECAY.FLAME))
 
   k.action('fire', withAgeDelta((fire, delta) => {
-    fire.color = k.rgba(delta - k.rand(0, delta), 0, 0, delta)
+    const heat = delta - k.rand(0, delta)
+
+    fire.color = k.rgba(heat, k.rand(0, heat / 2), 0, delta)
     fire.angle += k.dt()
   }, DECAY.FIRE))
 
@@ -432,10 +434,18 @@ k.scene('main', () => {
   }
 })
 
-k.scene('death', score => {
+k.scene('death', (score, gotWrecked) => {
   k.add([
     k.text(join([
-      'Gravity ate you up!',
+      gotWrecked
+        ? 'Wrecked by space debris!'
+        : k.choose([
+          'Gravity ate you up!',
+          'Newton fucked you!',
+          'Jesus don\'t want you for a sunbeam!',
+          'There\'s no light at the end of the wormhole!',
+          'You could not resist the force of gravity!'
+        ]),
       `Your score was ${score}.`
     ], 2)),
     k.pos(200, 200)
