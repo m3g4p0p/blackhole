@@ -1,9 +1,7 @@
 const k = window.k = window.kaboom
 let difficulty = 1
-let lastScore = 0
 let highscore = 0
 let mouseControl = false
-let isWrecked = false
 
 const MOVE = {
   SHIP: { X: 100, Y: 10 },
@@ -50,6 +48,18 @@ function spawn (components) {
   }])
 }
 
+function withAgeDelta (fn, scale) {
+  return (object) => {
+    const delta = 1 - object.getAge() / scale
+
+    if (delta > 0) {
+      return fn(object, delta)
+    }
+
+    return k.destroy(object)
+  }
+}
+
 function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
 }
@@ -68,22 +78,6 @@ function addInfo (components, x, y, s = 1) {
     k.layer('info'),
     ...components
   ])
-}
-
-function unlessWrecked (fn) {
-  return (...args) => !isWrecked && fn(...args)
-}
-
-function withAgeDelta (fn, scale) {
-  return (object) => {
-    const delta = 1 - object.getAge() / scale
-
-    if (delta > 0) {
-      return fn(object, delta)
-    }
-
-    return k.destroy(object)
-  }
 }
 
 k.init({
@@ -130,8 +124,7 @@ k.scene('start', () => {
 })
 
 k.scene('main', () => {
-  lastScore = 0
-  isWrecked = false
+  let isWrecked = false
 
   k.layers([
     'info',
@@ -177,6 +170,10 @@ k.scene('main', () => {
 
   function addGravitySpin (object, scale) {
     object.angle += k.dt() * gravity.value / scale
+  }
+
+  function unlessWrecked (fn) {
+    return (...args) => !isWrecked && fn(...args)
   }
 
   function rotate () {
@@ -249,14 +246,14 @@ k.scene('main', () => {
         k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
       ),
       k.pos(k.rand(0, k.width()), -k.height()),
-      k.pos(ship.pos.x, -k.height()),
+      // k.pos(ship.pos.x, -k.height()),
       k.color(1, 1, 1),
       k.rotate(0),
       k.origin('center'),
       k.body(),
       'debris',
-      { direction: k.rand(-1, 1) },
-      { direction: 0 }
+      { direction: k.rand(-1, 1) }
+      // { direction: 0 }
     ])
   }
 
@@ -278,8 +275,7 @@ k.scene('main', () => {
 
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
-      lastScore = score.value
-      return k.go('death')
+      return k.go('death', score.value)
     }
 
     if (isWrecked) {
@@ -392,16 +388,16 @@ k.scene('main', () => {
   }
 })
 
-k.scene('death', () => {
+k.scene('death', score => {
   k.add([
     k.text(join([
       'Gravity ate you up!',
-      `Your score was ${lastScore}.`
+      `Your score was ${score}.`
     ], 2)),
     k.pos(200, 200)
   ])
 
-  highscore = Math.max(lastScore, highscore)
+  highscore = Math.max(score, highscore)
   k.wait(3, () => k.go('start'))
 })
 
