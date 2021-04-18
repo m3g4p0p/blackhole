@@ -245,15 +245,17 @@ k.scene('main', () => {
         k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X),
         k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
       ),
-      k.pos(k.rand(0, k.width()), -k.height()),
-      // k.pos(ship.pos.x, -k.height()),
+      window.debug
+        ? k.pos(ship.pos.x, -k.height())
+        : k.pos(k.rand(0, k.width()), -k.height()),
       k.color(1, 1, 1),
       k.rotate(0),
       k.origin('center'),
       k.body(),
       'debris',
-      { direction: k.rand(-1, 1) }
-      // { direction: 0 }
+      window.debug
+        ? { direction: 0 }
+        : { direction: k.rand(-1, 1) }
     ])
   }
 
@@ -317,7 +319,7 @@ k.scene('main', () => {
   }, 1000))
 
   k.action('fire', withAgeDelta((fire, delta) => {
-    fire.color = k.rgba(delta, 0, 0, delta)
+    fire.color = k.rgba(delta - k.rand(0, delta), 0, 0, delta)
     fire.angle += k.dt()
   }, 500))
 

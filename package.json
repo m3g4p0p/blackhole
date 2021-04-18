@@ -3,7 +3,7 @@
     "env": {
       "browser": true
     },
-    "globals": "kaboom"
+    "globals": "k"
   },
   "scripts": {
     "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
