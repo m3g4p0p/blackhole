@@ -42,7 +42,7 @@ const DECAY = {
 }
 
 const THROTTLE = {
-  FLAME: 25
+  FLAME: 40
 }
 
 const INITIAL_GRAVITY = 1000
@@ -310,7 +310,7 @@ k.scene('main', () => {
   function sustainFlame () {
     const lastFlame = k.get('flame').pop()
 
-    if (lastFlame && lastFlame.getAge() > DECAY.FLAME / THROTTLE.FLAME) {
+    if (!lastFlame || lastFlame.getAge() > THROTTLE.FLAME) {
       spawnFlame()
     }
   }
@@ -329,7 +329,7 @@ k.scene('main', () => {
       followMouse()
     }
 
-    if (ship.velY < -THROTTLE.FLAME) {
+    if (ship.velY < 0) {
       sustainFlame()
     }
 
