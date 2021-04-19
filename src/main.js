@@ -41,6 +41,10 @@ const DECAY = {
   TAIL: 200
 }
 
+const THROTTLE = {
+  FLAME: 25
+}
+
 const INITIAL_GRAVITY = 1000
 const STARS = 10
 const CAM_THRESHOLD = 20
@@ -55,7 +59,7 @@ function spawn (components) {
 }
 
 function withAgeDelta (fn, scale) {
-  return (object) => {
+  return object => {
     const delta = 1 - object.getAge() / scale
 
     if (delta > 0) {
@@ -72,6 +76,13 @@ function join (lines, spacing = 1) {
 
 function cap (value, absMax) {
   return Math.max(absMax, Math.abs(value)) * Math.sign(value)
+}
+
+function rotate (x, y, angle) {
+  return k.vec2(
+    x * Math.cos(angle) - y * Math.sin(angle),
+    x * Math.sin(angle) + y * Math.cos(angle)
+  )
 }
 
 function addInfo (components, x, y, s = 1) {
@@ -209,11 +220,14 @@ k.scene('main', () => {
   }
 
   function spawnFlame () {
+    const offset = rotate(0, ship.height / 2, -ship.angle)
+
     spawn([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.x, ship.pos.y + ship.height / 2),
+      k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
       k.color(1, 1, 0),
+      k.scale(1),
       k.layer('background'),
       k.origin('center'),
       'flame'
@@ -296,7 +310,7 @@ k.scene('main', () => {
   function sustainFlame () {
     const lastFlame = k.get('flame').pop()
 
-    if (lastFlame && lastFlame.getAge() > DECAY.FLAME / 20) {
+    if (lastFlame && lastFlame.getAge() > DECAY.FLAME / THROTTLE.FLAME) {
       spawnFlame()
     }
   }
@@ -315,7 +329,7 @@ k.scene('main', () => {
       followMouse()
     }
 
-    if (ship.velY < 0) {
+    if (ship.velY < -THROTTLE.FLAME) {
       sustainFlame()
     }
 
@@ -348,6 +362,7 @@ k.scene('main', () => {
 
   k.action('flame', withAgeDelta((flame, delta) => {
     flame.color = k.rgba(1, delta, 0, delta)
+    flame.scale = k.vec2(0.5 + delta / 2, 1)
   }, DECAY.FLAME))
 
   k.action('fire', withAgeDelta((fire, delta) => {
@@ -442,7 +457,6 @@ k.scene('death', (score, gotWrecked) => {
         : k.choose([
           'Gravity ate you up!',
           'Newton fucked you!',
-          'Jesus don\'t want you for a sunbeam!',
           'There\'s no light at the end of the wormhole!',
           'You could not resist the force of gravity!'
         ]),
