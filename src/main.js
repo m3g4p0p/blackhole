@@ -221,6 +221,7 @@ k.scene('main', () => {
 
   function spawnFlame () {
     const offset = rotate(0, ship.height / 2, -ship.angle)
+    const spin = rotate(0, SIZE.FLAME.Y, -ship.angle).x
 
     spawn([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
@@ -230,7 +231,8 @@ k.scene('main', () => {
       k.scale(1),
       k.layer('background'),
       k.origin('center'),
-      'flame'
+      'flame',
+      { spin }
     ])
   }
 
@@ -363,6 +365,7 @@ k.scene('main', () => {
   k.action('flame', withAgeDelta((flame, delta) => {
     flame.color = k.rgba(1, delta, 0, delta)
     flame.scale = k.vec2(0.5 + delta / 2, 1)
+    flame.pos.x += flame.spin
   }, DECAY.FLAME))
 
   k.action('fire', withAgeDelta((fire, delta) => {
