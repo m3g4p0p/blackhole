@@ -1,7 +1,5 @@
-const k = window.k = window.kaboom
-let difficulty = 1
-let highscore = 0
-let mouseControl = false
+import './vendor/kaboom.js'
+import { spawnPlugin, infoPlugin } from './plugins.js'
 
 const MOVE = {
   SHIP: { X: 100, Y: 10 },
@@ -50,25 +48,14 @@ const STARS = 10
 const CAM_THRESHOLD = 20
 const JUMP_FORCE = 480
 
-function spawn (components) {
-  const spawned = Date.now()
+const k = window.k = window.kaboom({
+  width: SIZE.GAME.X,
+  height: SIZE.GAME.Y,
+  plugins: [spawnPlugin, infoPlugin]
+})
 
-  return k.add([...components, {
-    getAge: () => Date.now() - spawned
-  }])
-}
-
-function withAgeDelta (fn, scale) {
-  return object => {
-    const delta = 1 - object.getAge() / scale
-
-    if (delta > 0) {
-      return fn(object, delta)
-    }
-
-    return k.destroy(object)
-  }
-}
+let difficulty = 1
+let highscore = 0
 
 function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
@@ -85,22 +72,22 @@ function rotate (x, y, angle) {
   )
 }
 
-function addInfo (components, x, y, s = 1) {
-  const width = k.width()
-  const height = k.height()
+function posDelta (object) {
+  const lastPos = object.pos.clone()
+  const delta = k.vec2(0, 0)
 
-  return k.add([
-    k.pos((width + x) % width, (height + y) % height),
-    k.color(s, s, s),
-    k.layer('info'),
-    ...components
-  ])
+  object.on('update', () => {
+    delta.x = object.pos.x - lastPos.x
+    delta.y = object.pos.y - lastPos.y
+    Object.assign(lastPos, object.pos)
+  })
+
+  return delta
 }
 
-k.init({
-  width: SIZE.GAME.X,
-  height: SIZE.GAME.Y
-})
+function toggleMouseClass (value) {
+  document.body.classList.toggle('mouse-control', value)
+}
 
 k.scene('start', () => {
   const info = k.add([
@@ -123,8 +110,12 @@ k.scene('start', () => {
     k.pos(200, 200)
   ])
 
+  k.mouseClick(() => {
+    k.go('main', true)
+  })
+
   k.keyPress('space', () => {
-    k.go('main')
+    k.go('main', false)
   })
 
   k.keyPress('up', () => {
@@ -140,7 +131,7 @@ k.scene('start', () => {
   updateInfo()
 })
 
-k.scene('main', () => {
+k.scene('main', mouseControl => {
   let isWrecked = false
 
   k.layers([
@@ -149,17 +140,17 @@ k.scene('main', () => {
     'game'
   ], 'game')
 
-  addInfo([
+  k.addInfo([
     k.text('G'),
     k.origin('botright')
   ], -10, -10, 0.5)
 
-  const score = addInfo([
+  const score = k.addInfo([
     k.text(),
     { value: 0 }
   ], 10, 10)
 
-  const gravity = addInfo([
+  const gravity = k.addInfo([
     k.rect(10, 0),
     k.origin('botright'),
     { value: INITIAL_GRAVITY }
@@ -173,6 +164,8 @@ k.scene('main', () => {
     k.rotate(0),
     k.origin('center')
   ])
+
+  const shipDelta = posDelta(ship)
 
   function addScore (value) {
     score.value += value
@@ -198,6 +191,15 @@ k.scene('main', () => {
     ship.angle = (ship.pos.x - width / 2) / -width
   }
 
+  function ignite () {
+    if (ship.pos.y < 0) {
+      return
+    }
+
+    ship.jump()
+    spawnFlame()
+  }
+
   function adjustCam () {
     const delta = Math.min(0, ship.pos.y - CAM_THRESHOLD)
     k.camPos(k.camPos().x, k.height() / 2 + delta)
@@ -216,14 +218,20 @@ k.scene('main', () => {
       'boost'
     ])
 
-    k.wait(TIME.BOOST, () => k.destroy(boost))
+    boost.on('destroy', () => {
+      k.wait(TIME.BOOST, spawnBoost)
+    })
+
+    k.wait(TIME.BOOST, () => {
+      k.destroy(boost)
+    })
   }
 
   function spawnFlame () {
     const offset = rotate(0, ship.height / 2, -ship.angle)
     const spin = rotate(0, SIZE.FLAME.Y, -ship.angle).x
 
-    spawn([
+    k.spawn([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
       k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
@@ -237,7 +245,7 @@ k.scene('main', () => {
   }
 
   function spawnFire () {
-    spawn([
+    k.spawn([
       k.rect(ship.width, ship.width),
       k.pos(ship.pos.x, ship.pos.y),
       k.rotate(0),
@@ -249,7 +257,7 @@ k.scene('main', () => {
   }
 
   function spawnStar (y = 0) {
-    spawn([
+    k.spawn([
       k.rect(SIZE.STAR.X, SIZE.STAR.Y),
       k.pos(
         k.rand(0, k.width() - SIZE.STAR.X),
@@ -262,7 +270,7 @@ k.scene('main', () => {
   }
 
   function spawnTail (debris) {
-    spawn([
+    k.spawn([
       k.scale(1),
       k.color(0.5, 0.5, 0.5),
       k.pos(debris.pos),
@@ -331,13 +339,15 @@ k.scene('main', () => {
       followMouse()
     }
 
-    if (ship.velY < 0) {
+    if (shipDelta.y < -1) {
       sustainFlame()
     }
 
     adjustCam()
     rotateShip()
   })
+
+  ship.on('update', console.log)
 
   ship.collides('boost', boost => {
     k.destroy(boost)
@@ -362,30 +372,26 @@ k.scene('main', () => {
     }
   })
 
-  k.action('flame', withAgeDelta((flame, delta) => {
+  k.withAgeDelta('flame', (flame, delta) => {
     flame.color = k.rgba(1, delta, 0, delta)
     flame.scale = k.vec2(0.5 + delta / 2, 1)
     flame.pos.x += flame.spin
-  }, DECAY.FLAME))
+  }, DECAY.FLAME)
 
-  k.action('fire', withAgeDelta((fire, delta) => {
+  k.withAgeDelta('fire', (fire, delta) => {
     const heat = delta - k.rand(0, delta)
 
     fire.color = k.rgba(heat, k.rand(0, heat / 2), 0, delta)
     fire.angle += k.dt()
-  }, DECAY.FIRE))
+  }, DECAY.FIRE)
 
-  k.action('tail', withAgeDelta((tail, delta) => {
+  k.withAgeDelta('tail', (tail, delta) => {
     tail.color = k.rgba(0.5, 0.5, 0.5, delta)
     tail.scale = k.vec2(delta, delta)
-  }, DECAY.TAIL))
+  }, DECAY.TAIL)
 
   k.action('boost', boost => {
     addGravitySpin(boost, SPIN.BOOST)
-  })
-
-  k.on('destroy', 'boost', () => {
-    k.wait(TIME.BOOST, spawnBoost)
   })
 
   k.action('debris', debris => {
@@ -416,14 +422,15 @@ k.scene('main', () => {
     addGravity(FACTOR.GRAVITY)
   })
 
-  k.keyPress('space', unlessWrecked(() => {
-    if (ship.pos.y < 0) {
-      return
+  k.mouseClick(unlessWrecked(() => {
+    if (!mouseControl) {
+      toggleMouseClass(mouseControl = true)
     }
 
-    ship.jump()
-    spawnFlame()
+    ignite()
   }))
+
+  k.keyPress('space', unlessWrecked(ignite))
 
   k.keyDown('left', unlessWrecked(() => {
     if (ship.pos.x - ship.width > 0) {
@@ -437,15 +444,9 @@ k.scene('main', () => {
     }
   }))
 
-  k.mouseClick(() => {
-    document.body.classList.toggle(
-      'mouse-control',
-      mouseControl = !mouseControl
-    )
-  })
-
   k.loop(TIME.DEBRIS, spawnDebris)
   k.wait(TIME.BOOST, spawnBoost)
+  toggleMouseClass(mouseControl)
 
   for (let i = 0; i < STARS; i++) {
     spawnStar(k.rand(0, k.height()))
@@ -470,6 +471,7 @@ k.scene('death', (score, gotWrecked) => {
 
   highscore = Math.max(score, highscore)
   k.wait(3, () => k.go('start'))
+  toggleMouseClass(false)
 })
 
 k.start('start')

@@ -1,7 +1,7 @@
 /*
 
 kaboom.js
-v0.2.0
+v0.4.0 "Multiboom"
 
 a JavaScript game programming library
 
@@ -75,16 +75,7 @@ debug utils
 
 */
 
-(() => {
-
-const kaboom = {};
-
-kaboom.debug = {
-	timeScale: 1,
-	showArea: false,
-	showLog: false,
-	hoverInfo: false,
-};
+window.kaboom = (gconf = {}) => {
 
 /*
 
@@ -105,8 +96,9 @@ assets     *                     .            ~       +    .
 
 */
 
-const DEF_FONT = "unscii";
 const ASCII_CHARS = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+const DEF_FONT = "unscii";
+const UNSCII_SRC = "data:image/png;base64,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";
 
 const assets = {
 	lastLoaderID: 0,
@@ -117,17 +109,36 @@ const assets = {
 	fonts: {},
 };
 
-function assetsInit(conf = {}) {
+function assetsInit() {
 	// default font unscii http://pelulamu.net/unscii/
 	loadFont(
 		DEF_FONT,
-		"data:image/png;base64,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",
+		UNSCII_SRC,
 		8,
 		8
 	);
 }
 
+function loadImg(src) {
+
+	const img = new Image();
+
+	img.crossOrigin = "";
+	img.src = src;
+
+	return new Promise((resolve, reject) => {
+		img.onload = () => {
+			resolve(img);
+		};
+		img.onerror = () => {
+			reject();
+		};
+	});
+
+}
+
 // make a new load tracker
+// the game starts after all trackers are done()
 function newLoader() {
 	const id = assets.lastLoaderID;
 	assets.loaders[id] = false;
@@ -158,7 +169,14 @@ function loadProgress() {
 
 // global load path prefix
 function loadRoot(path) {
-	assets.loadRoot = path;
+	if (path) {
+		assets.loadRoot = path;
+	}
+	return assets.loadRoot;
+}
+
+function isDataUrl(src) {
+	return src.startsWith("data:");
 }
 
 // load a bitmap font to asset manager
@@ -167,13 +185,20 @@ function loadFont(name, src, gw, gh, chars) {
 	return new Promise((resolve, reject) => {
 
 		const loader = newLoader();
+		const path = isDataUrl(src) ? src : assets.loadRoot + src;
 
-		loadImg(src, (img) => {
-			const font = makeFont(makeTex(img), gw, gh, chars || ASCII_CHARS);
-			loader.done();
-			assets.fonts[name] = font;
-			resolve(font);
-		});
+		loadImg(path)
+			.then((img) => {
+				assets.fonts[name] = makeFont(makeTex(img), gw, gh, chars || ASCII_CHARS);
+				resolve(assets.fonts[name]);
+			})
+			.catch(() => {
+				error(`failed to load font '${name}' from '${src}'`);
+				reject();
+			})
+			.finally(() => {
+				loader.done();
+			});
 
 	});
 
@@ -186,8 +211,6 @@ function loadSprite(name, src, conf = {}) {
 	// sliceX: num,
 	// sliceY: num,
 	// anims: { name: [num, num] }
-
-	const curRoot = assets.loadRoot;
 
 	// synchronously load sprite from local pixel data
 	//
@@ -233,65 +256,20 @@ function loadSprite(name, src, conf = {}) {
 		// from url
 		if (typeof(src) === "string") {
 
-			// from replit kaboom workspace sprite editor
-			if (src.match(/\.kbmsprite$/)) {
+			const loader = newLoader();
+			const path = isDataUrl(src) ? src : assets.loadRoot + src;
 
-				const loader = newLoader();
-
-				fetch(curRoot + src)
-					.then((res) => {
-						return res.json();
-					})
-					.then((data) => {
-
-						const frames = data.frames;
-
-						const pixels = frames
-							.map(f => f.pixels)
-							.flat()
-							;
-
-						const w = frames[0].width;
-						const h = frames[0].height;
-
-						const img = new ImageData(
-							new Uint8ClampedArray(pixels),
-							w,
-							h * frames.length,
-						);
-
-						const sprite = loadRawSprite(name, img, {
-							sliceY: frames.length,
-							anims: conf.anims,
-						});
-
-						loader.done();
-						resolve(sprite);
-
-					})
-					.catch(() => {
-						console.error(`failed to load sprite '${name}' from '${src}'`);
-					})
-					;
-
-			// any other url
-			} else {
-
-				const loader = newLoader();
-				const img = loadImg(curRoot + src);
-
-				img.onload = () => {
-					const sprite = loadRawSprite(name, img, conf);
+			loadImg(path)
+				.then((img) => {
+					resolve(loadRawSprite(name, img, conf));
+				})
+				.catch(() => {
+					error(`failed to load sprite '${name}' from '${src}'`);
+					reject();
+				})
+				.finally(() => {
 					loader.done();
-					resolve(sprite);
-				};
-
-				img.onerror = () => {
-					console.error(`failed to load sprite '${name}' from '${src}'`);
-					loader.done();
-				};
-
-			}
+				});
 
 			return;
 
@@ -305,110 +283,8 @@ function loadSprite(name, src, conf = {}) {
 
 }
 
-function loadAseprite(name, imgSrc, jsonSrc) {
-
-	const curRoot = assets.loadRoot;
-
-	return loadSprite(name, imgSrc).then(() => {
-
-		const loader = newLoader();
-
-		fetch(curRoot + jsonSrc)
-			.then((res) => {
-				return res.json();
-			})
-			.then((data) => {
-				const size = data.meta.size;
-				assets.sprites[name].frames = data.frames.map((f) => {
-					return quad(
-						f.frame.x / size.w,
-						f.frame.y / size.h,
-						f.frame.w / size.w,
-						f.frame.h / size.h,
-					);
-				});
-				for (const anim of data.meta.frameTags) {
-					assets.sprites[name].anims[anim.name] = [anim.from, anim.to];
-				}
-				loader.done();
-			});
-
-	});
-
-}
-
-// TODO: finalize interface
-// get sprite asset settings
-function getSprite(name) {
-	const sprite = assets.sprites[name];
-	if (!sprite) {
-		console.error(`sprite not found: '${name}'`);
-	}
-	return {
-
-		width() {
-			return sprite.tex.width;
-		},
-
-		height() {
-			return sprite.tex.height;
-		},
-
-		addAnim(name, range) {
-			sprite.anims[name] = range;
-		},
-
-		useAseSpriteSheet(path) {
-			return fetch(assets.loadRoot + path)
-				.then((res) => {
-					return res.json();
-				})
-				.then((data) => {
-					const size = data.meta.size;
-					sprite.frames = data.frames.map((f) => {
-						return quad(
-							f.frame.x / size.w,
-							f.frame.y / size.h,
-							f.frame.w / size.w,
-							f.frame.h / size.h,
-						);
-					});
-					for (const anim of data.meta.frameTags) {
-						sprite.anims[anim.name] = [anim.from, anim.to];
-					}
-				});
-		},
-
-		slice(x, y) {
-
-			x = x || 1;
-			y = y || 1;
-			const qw = 1 / x;
-			const qh = 1 / y;
-
-			sprite.frames = [];
-
-			for (let j = 0; j < y; j++) {
-				for (let i = 0; i < x; i++) {
-					sprite.frames.push(quad(
-						i * qw,
-						j * qh,
-						qw,
-						qh,
-					));
-				}
-			}
-
-		},
-
-	};
-
-}
-
 // load a sound to asset manager
 function loadSound(name, src, conf = {}) {
-
-	const curRoot = assets.loadRoot;
 
 	return new Promise((resolve, reject) => {
 
@@ -417,26 +293,29 @@ function loadSound(name, src, conf = {}) {
 
 			const loader = newLoader();
 
-			fetch(curRoot + src)
+			fetch(assets.loadRoot + src)
 				.then((res) => {
 					return res.arrayBuffer();
 				})
 				.then((data) => {
-					// TODO: doesn't work on safari
-					audio.ctx.decodeAudioData(data, (buf) => {
-						loader.done();
-						audio.sounds[name] = buf;
-						resolve(buf);
-					}, (err) => {
-						console.error(`failed to decode audio: ${name}`);
-						loader.done();
+					return new Promise((resolve2, reject2) => {
+						audio.ctx.decodeAudioData(data, (buf) => {
+							resolve2(buf);
+						}, (err) => {
+							reject2();
+						});
 					});
 				})
-				.catch((err) => {
-					console.error(`failed to load sound '${name}' from '${src}'`);
-					loader.done();
+				.then((buf) => {
+					audio.sounds[name] = buf;
 				})
-				;
+				.catch(() => {
+					error(`failed to load sound '${name}' from '${src}'`);
+					reject();
+				})
+				.finally(() => {
+					loader.done();
+				});
 
 		}
 
@@ -471,8 +350,10 @@ const app = {
 	mousePos: vec2(0, 0),
 	time: 0.0,
 	realTime: 0.0,
+	skipTime: false,
 	dt: 0.0,
 	scale: 1,
+	isTouch: false,
 };
 
 const keyMap = {
@@ -489,73 +370,98 @@ const preventDefaultKeys = [
 	"right",
 	"up",
 	"down",
+	"tab",
+	"f1",
+	"f2",
+	"f3",
+	"f4",
+	"f5",
+	"f6",
+	"f7",
+	"f8",
+	"f9",
+	"f10",
+	"f11",
 ];
 
-// TODO: make this not global?
 let gl;
 
-function init(conf = {}) {
+function appInit() {
+	app.canvas = gconf.canvas;
 
-	let canvas = conf.canvas;
-
-	kaboom.conf = conf;
-
-	if (!canvas) {
-		canvas = document.createElement("canvas");
-		const root = conf.root || document.body;
-		root.appendChild(canvas);
+	if (!app.canvas) {
+		app.canvas = document.createElement("canvas");
+		const root = gconf.root || document.body;
+		root.appendChild(app.canvas);
 	}
 
-	const scale = conf.scale || 1;
+	app.scale = gconf.scale || 1;
 
-	if (conf.fullscreen) {
-		canvas.width = window.innerWidth;
-		canvas.height = window.innerHeight;
+	if (gconf.fullscreen) {
+		app.canvas.width = window.innerWidth;
+		app.canvas.height = window.innerHeight;
 	} else {
-		canvas.width = (conf.width || 640) * scale;
-		canvas.height = (conf.height || 480) * scale;
+		app.canvas.width = (gconf.width || 640) * app.scale;
+		app.canvas.height = (gconf.height || 480) * app.scale;
 	}
 
 	const styles = [
 		"outline: none",
 	];
 
-	if (conf.crisp) {
+	if (gconf.crisp) {
 		styles.push("image-rendering: pixelated");
 		styles.push("image-rendering: crisp-edges");
 	}
 
-	canvas.style = styles.join(";");
-	canvas.setAttribute("tabindex", "0");
+	app.canvas.style = styles.join(";");
+	app.canvas.setAttribute("tabindex", "0");
 
-	app.scale = conf.scale || 1;
-
-	gl = canvas
+	gl = app.canvas
 		.getContext("webgl", {
 			antialias: true,
 			depth: true,
 			stencil: true,
 			alpha: true,
+			preserveDrawingBuffer: true,
 		});
 
-	gfxInit(conf);
-	audioInit(conf);
-	assetsInit(conf);
+	gfxInit();
+	audioInit();
+	assetsInit();
 
-	canvas.addEventListener("mousemove", (e) => {
+	app.isTouch = ("ontouchstart" in window) ||
+		(navigator.maxTouchPoints > 0) ||
+		(navigator.msMaxTouchPoints > 0);
+
+	app.canvas.addEventListener("contextmenu", (e) => {
+		e.preventDefault();
+	});
+
+	app.canvas.addEventListener("mousemove", (e) => {
 		app.mousePos = vec2(e.offsetX, e.offsetY).scale(1 / app.scale);
 	});
 
-	canvas.addEventListener("mousedown", (e) => {
+	app.canvas.addEventListener("mousedown", (e) => {
 		app.mouseState = "pressed";
 	});
 
-	// TODO: on mobile this is fired at the same frame as "mousedown" which cancels out
-	canvas.addEventListener("mouseup", (e) => {
+	app.canvas.addEventListener("mouseup", (e) => {
 		app.mouseState = "released";
 	});
 
-	canvas.addEventListener("keydown", (e) => {
+	app.canvas.addEventListener("touchstart", (e) => {
+		const t = e.touches[0];
+		app.mousePos = vec2(t.clientX, t.clientY).scale(1 / app.scale);
+		app.mouseState = "pressed";
+	});
+
+	app.canvas.addEventListener("touchmove", (e) => {
+		const t = e.touches[0];
+		app.mousePos = vec2(t.clientX, t.clientY).scale(1 / app.scale);
+	});
+
+	app.canvas.addEventListener("keydown", (e) => {
 
 		const k = keyMap[e.key] || e.key.toLowerCase();
 
@@ -579,12 +485,29 @@ function init(conf = {}) {
 
 	});
 
-	canvas.addEventListener("keyup", (e) => {
+	app.canvas.addEventListener("keyup", (e) => {
 		const k = keyMap[e.key] || e.key.toLowerCase();
 		app.keyStates[k] = "released";
 	});
 
-	canvas.focus();
+	app.canvas.focus();
+
+	document.addEventListener("visibilitychange", (e) => {
+		switch (document.visibilityState) {
+			case "visible":
+				// prevent a surge of dt() when switch back after the tab being hidden for a while
+				app.skipTime = true;
+				audio.ctx.resume();
+				break;
+			case "hidden":
+				audio.ctx.suspend();
+				break;
+		}
+	});
+
+	if (gconf.debug) {
+		debug.showLog = true;
+	}
 
 }
 
@@ -593,7 +516,7 @@ function processBtnState(s) {
 		return "down";
 	}
 	if (s === "released") {
-		return "idle";
+		return "up";
 	}
 	return s;
 }
@@ -655,6 +578,11 @@ function time() {
 	return app.time;
 }
 
+// get a base64 png image of canvas
+function screenshot() {
+	return app.canvas.toDataURL();
+}
+
 /*
 
 *33333*
@@ -709,31 +637,21 @@ const gfx = {
 	transformStack: [],
 };
 
-function gfxInit(conf = {}) {
+function gfxInit() {
 
 	gfx.mesh = makeBatchedMesh(65536, 65536);
 	gfx.prog = makeProgram(defVertSrc, defFragSrc);
 	gfx.defTex = makeTex(
 		new ImageData(new Uint8ClampedArray([ 255, 255, 255, 255, ]), 1, 1)
 	);
-	const c = conf.clearColor || rgb(0, 0, 0);
-	gl.clearColor(c.r, c.g, c.b, c.a);
+	const c = gconf.clearColor || [0, 0, 0, 1];
+	gl.clearColor(c[0], c[1], c[2], c[3]);
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	gl.enable(gl.DEPTH_TEST);
 	gl.enable(gl.BLEND);
 	gl.depthFunc(gl.LEQUAL);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-}
-
-function loadImg(src, f) {
-	const img = new Image();
-	img.crossOrigin = "";
-	img.src = src;
-	if (f) {
-		img.onload = f.bind(null, img);
-	}
-	return img;
 }
 
 // draw all cached vertices in the batched renderer
@@ -761,7 +679,7 @@ function flush() {
 
 	gfx.prog.unbind();
 	gfx.mesh.unbind();
-	gfx.curTex = undefined;
+	gfx.curTex = null;
 
 }
 
@@ -937,7 +855,7 @@ function makeProgram(vertSrc, fragSrc) {
 	var msg = gl.getShaderInfoLog(vertShader);
 
 	if (msg) {
-		console.error(msg);
+		error(msg);
 	}
 
 	const fragShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -948,7 +866,7 @@ function makeProgram(vertSrc, fragSrc) {
 	var msg = gl.getShaderInfoLog(fragShader);
 
 	if (msg) {
-		console.error(msg);
+		error(msg);
 	}
 
 	const id = gl.createProgram();
@@ -965,7 +883,7 @@ function makeProgram(vertSrc, fragSrc) {
 	var msg = gl.getProgramInfoLog(id);
 
 	if (msg) {
-		console.error(msg);
+		error(msg);
 	}
 
 	return {
@@ -1265,7 +1183,7 @@ function fmtText(text, conf = {}) {
 	const font = assets.fonts[fontName];
 
 	if (!font) {
-		console.error(`font not found: '${fontName}'`);
+		error(`font not found: '${fontName}'`);
 		return {
 			width: 0,
 			height: 0,
@@ -1388,7 +1306,7 @@ function play(id, conf = {}) {
 	const sound = audio.sounds[id];
 
 	if (!sound) {
-		console.error(`sound not found: "${id}"`);
+		error(`sound not found: "${id}"`);
 		return;
 	}
 
@@ -1445,6 +1363,9 @@ function play(id, conf = {}) {
 		},
 
 		detune(val) {
+			if (!srcNode.detune) {
+				return 0;
+			}
 			if (val !== undefined) {
 				srcNode.detune.value = Math.clamp(val, -1200, 1200);
 			}
@@ -1575,6 +1496,9 @@ function vec2(x, y) {
 		},
 		eq(other) {
 			return this.x === other.x && this.y === other.y;
+		},
+		str() {
+			return `(${this.x}, ${this.y})`
 		},
 	};
 }
@@ -1922,7 +1846,7 @@ function makeRng(seed) {
 				this.seed = (A * this.seed + C) % M;
 				return this.seed / M;
 			} else {
-				console.error("invalid param to rand()");
+				error("invalid param to rand()");
 			}
 		},
 	};
@@ -1936,16 +1860,12 @@ function rand(a, b) {
 	return defRNG.gen(a, b);
 }
 
-function randl(list) {
-	return list[Math.floor(Math.random() * list.length)];
-}
-
 function chance(p) {
 	return rand(0, 1) <= p;
 }
 
 function choose(list) {
-	return list[Math.floor(rand(0, list.length))];
+	return list[Math.floor(rand(list.length))];
 }
 
 function deepCopy(input) {
@@ -1983,7 +1903,6 @@ game       *                     .            ~       +    .
 
 */
 
-// TODO: custom scene store
 // TODO: comp registry?
 // TODO: avoid comp fields direct assign / collision
 // TODO: in-source doc on the component system
@@ -1996,6 +1915,7 @@ const game = {
 	curScene: undefined,
 	paused: false,
 	scenes: {},
+	log: [],
 };
 
 // start describing a scene (this should be called before start())
@@ -2031,17 +1951,22 @@ function scene(name, cb) {
 		timers: {},
 		lastTimerID: 0,
 
-		// misc
-		layers: {},
+		// cam
 		cam: {
 			pos: vec2(width() / 2, height() / 2),
 			scale: vec2(1, 1),
 			angle: 0,
 			shake: 0,
 			ignore: [],
+			mpos: vec2(0),
 		},
-		gravity: DEF_GRAVITY,
+
 		camMousePos: vec2(0),
+
+		// misc
+		layers: {},
+		gravity: DEF_GRAVITY,
+		data: {},
 
 	};
 
@@ -2051,17 +1976,67 @@ function curScene() {
 	return game.scenes[game.curScene];
 }
 
+// custom data kv store for scene
+function sceneData() {
+	return curScene().data;
+}
+
+// register inputs for controlling debug features
+function regDebugInputs() {
+
+	const dbg = debug;
+
+	keyPress("`", () => {
+		dbg.showLog = !dbg.showLog;
+		log(`show log: ${dbg.showLog ? "on" : "off"}`);
+	});
+
+	keyPress("f1", () => {
+		dbg.showArea = !dbg.showArea;
+		log(`show area: ${dbg.showArea ? "on" : "off"}`);
+	});
+
+	keyPress("f2", () => {
+		dbg.hoverInfo = !dbg.hoverInfo;
+		log(`hover info: ${dbg.hoverInfo ? "on" : "off"}`);
+	});
+
+	keyPress("f8", () => {
+		dbg.paused = !dbg.paused;
+		log(`${dbg.paused ? "paused" : "unpaused"}`);
+	});
+
+	keyPress("f7", () => {
+		dbg.timeScale = Math.clamp(dbg.timeScale - 0.2, 0, 2);
+		log(`time scale: ${dbg.timeScale.toFixed(1)}`);
+	});
+
+	keyPress("f9", () => {
+		dbg.timeScale = Math.clamp(dbg.timeScale + 0.2, 0, 2);
+		log(`time scale: ${dbg.timeScale.toFixed(1)}`);
+	});
+
+	keyPress("f10", () => {
+		stepFrame();
+		log(`stepped frame`);
+	});
+
+}
+
 // switch to a scene
 function go(name, ...args) {
 	reload(name);
 	game.curScene = name;
 	const scene = game.scenes[name];
 	if (!scene) {
-		console.error(`scene not found: '${name}'`);
+		error(`scene not found: '${name}'`);
 		return;
 	}
 	if (!scene.initialized) {
 		scene.init(...args);
+		if (gconf.debug) {
+			regDebugInputs();
+		}
 		scene.initialized = true;
 	}
 }
@@ -2069,7 +2044,7 @@ function go(name, ...args) {
 // reload a scene, reset all objs to their init states
 function reload(name) {
 	if (!game.scenes[name]) {
-		console.error(`scene not found: '${name}'`);
+		error(`scene not found: '${name}'`);
 		return;
 	}
 	scene(name, game.scenes[name].init);
@@ -2161,7 +2136,7 @@ function add(comps) {
 			}
 
 			if (type !== "object") {
-				console.error(`invalid comp type: ${type}`);
+				error(`invalid comp type: ${type}`);
 				return;
 			}
 
@@ -2231,6 +2206,15 @@ function add(comps) {
 					f(...args);
 				}
 			}
+			const scene = curScene();
+			const events = scene.events[event];
+			if (events) {
+				for (const ev of events) {
+					if (this.is(ev.tag)) {
+						ev.cb(this);
+					}
+				}
+			}
 		},
 
 		addTag(t) {
@@ -2289,6 +2273,9 @@ function readd(obj) {
 // add an event to a tag
 function on(event, tag, cb) {
 	const scene = curScene();
+	if (!scene.events[event]) {
+		scene.events[event] = [];
+	}
 	scene.events[event].push({
 		tag: tag,
 		cb: cb,
@@ -2497,17 +2484,19 @@ function gravity(g) {
 	return scene.gravity;
 }
 
+const LOG_TIME = 6;
+
 // TODO: cleaner pause logic
 function gameFrame(ignorePause) {
 
 	const scene = curScene();
 
 	if (!scene) {
-		console.error(`scene not found: '${game.curScene}'`);
+		error(`scene not found: '${game.curScene}'`);
 		return;
 	}
 
-	const doUpdate = ignorePause || !game.paused;
+	const doUpdate = ignorePause || !debug.paused;
 
 	if (doUpdate) {
 		// update timers
@@ -2527,13 +2516,14 @@ function gameFrame(ignorePause) {
 	revery((obj) => {
 		if (!obj.paused && doUpdate) {
 			obj.trigger("update");
-			for (const e of scene.events.update) {
-				if (obj.is(e.tag)) {
-					e.cb(obj);
-				}
-			}
 		}
 	});
+
+	if (doUpdate) {
+		for (const f of scene.action) {
+			f();
+		}
+	}
 
 	// calculate camera matrix
 	const size = vec2(width(), height());
@@ -2565,26 +2555,56 @@ function gameFrame(ignorePause) {
 
 			obj.trigger("draw");
 
-			for (const e of scene.events.draw) {
-				if (obj.is(e.tag)) {
-					e.cb(obj);
-				}
-			}
-
 			popTransform();
 
 		}
 
 	});
 
-	if (doUpdate) {
-		for (const f of scene.action) {
-			f();
-		}
-	}
-
 	for (const f of scene.render) {
 		f();
+	}
+
+	// TODO: make log and progress bar fixed size independent of global scale
+	// draw log
+	game.log = game.log.filter(l => l.timer < debug.logTime);
+
+	if (game.log.length > debug.logMax) {
+		game.log = game.log.slice(0, debug.logMax);
+	}
+
+	const pos = vec2(0, height());
+
+	if (debug.showLog) {
+
+		game.log.forEach((log, i) => {
+
+			const col = (() => {
+				switch (log.type) {
+					case "log": return rgb(1, 1, 1);
+					case "error": return rgb(1, 0, 0.5);
+				}
+			})();
+
+			const ftext = fmtText(log.msg, {
+				pos: pos,
+				origin: "botleft",
+				color: col,
+				z: 1,
+			});
+
+			drawRect(pos, ftext.width, ftext.height, {
+				origin: "botleft",
+				color: rgba(0, 0, 0, 0.5),
+				z: 1,
+			});
+
+			drawFmtText(ftext);
+			log.timer += dt();
+			pos.y -= ftext.height;
+
+		});
+
 	}
 
 	gfxFrameEnd();
@@ -2602,8 +2622,13 @@ function start(name, ...args) {
 		const realDt = realTime - app.realTime;
 
 		app.realTime = realTime;
-		app.dt = realDt * kaboom.debug.timeScale;
-		app.time += app.dt;
+
+		if (!app.skipTime) {
+			app.dt = realDt * debug.timeScale;
+			app.time += app.dt;
+		}
+
+		app.skipTime = false;
 
 		if (!game.loaded) {
 
@@ -2636,7 +2661,7 @@ function start(name, ...args) {
 			const scene = curScene();
 
 			if (!scene) {
-				console.error(`scene not found: '${game.curScene}'`);
+				error(`scene not found: '${game.curScene}'`);
 				return;
 			}
 
@@ -2823,8 +2848,8 @@ function area(p1, p2) {
 
 		draw() {
 
-			const showArea = kaboom.debug.showArea;
-			const hoverInfo = kaboom.debug.hoverInfo;
+			const showArea = debug.showArea;
+			const hoverInfo = debug.hoverInfo;
 
 			if (!showArea) {
 				return;
@@ -3138,7 +3163,7 @@ function sprite(id, conf = {}) {
 	const spr = assets.sprites[id];
 
 	if (!spr) {
-		console.error(`sprite not found: "${id}"`);
+		error(`sprite not found: "${id}"`);
 		return;
 	}
 
@@ -3151,20 +3176,20 @@ function sprite(id, conf = {}) {
 		q.h *= conf.quad.h;
 	}
 
-	const w = spr.tex.width * q.w;
-	const h = spr.tex.height * q.h;
+	const width = spr.tex.width * q.w;
+	const height = spr.tex.height * q.h;
 	let timer = 0;
 	let looping = false;
+	let curAnim = null;
 	const events = {};
 
 	return {
 
 		spriteID: id,
-		curAnim: undefined,
+		width: width,
+		height: height,
 		animSpeed: conf.animSpeed || 0.1,
 		frame: conf.frame || 0,
-		width: w,
-		height: h,
 		quad: conf.quad || quad(0, 0, 1, 1),
 
 		add() {
@@ -3194,12 +3219,12 @@ function sprite(id, conf = {}) {
 
 		update() {
 
-			if (!this.curAnim) {
+			if (!curAnim) {
 				return;
 			}
 
 			const speed = this.animSpeed;
-			const anim = spr.anims[this.curAnim];
+			const anim = spr.anims[curAnim];
 
 			timer += dt();
 
@@ -3221,18 +3246,18 @@ function sprite(id, conf = {}) {
 
 		play(name, loop) {
 
-			const anim = assets.sprites[this.spriteID].anims[name];
+			const anim = spr[this.spriteID].anims[name];
 
 			if (!anim) {
-				console.error(`anim not found: ${name}`);
+				error(`anim not found: ${name}`);
 				return;
 			}
 
-			if (this.curAnim) {
+			if (curAnim) {
 				this.stop();
 			}
 
-			this.curAnim = name;
+			curAnim = name;
 			this.frame = anim[0];
 			looping = loop === undefined ? true : loop;
 
@@ -3243,13 +3268,21 @@ function sprite(id, conf = {}) {
 		},
 
 		stop() {
-			if (!this.curAnim) {
+			if (!curAnim) {
 				return;
 			}
-			if (events[this.curAnim]?.end) {
-				events[this.curAnim].end();
+			if (events[curAnim]?.end) {
+				events[curAnim].end();
 			}
-			this.curAnim = undefined;
+			curAnim = null;
+		},
+
+		numFrames() {
+			return spr.frames.length;
+		},
+
+		curAnim() {
+			return curAnim;
 		},
 
 		onAnimPlay(name, cb) {
@@ -3268,8 +3301,8 @@ function sprite(id, conf = {}) {
 
 		debugInfo() {
 			const info = {};
-			if (this.curAnim) {
-				info.curAnim = `"${this.curAnim}"`;
+			if (curAnim) {
+				info.curAnim = `"${curAnim}"`;
 			}
 			return info;
 		},
@@ -3388,42 +3421,44 @@ const DEF_JUMP_FORCE = 480;
 
 function body(conf = {}) {
 
+	let velY = 0;
+	let curPlatform = null;
+	const maxVel = conf.maxVel || DEF_MAX_VEL;
+
 	return {
 
-		velY: 0,
-		jumpForce: conf.jumpForce !== null ? conf.jumpForce : DEF_JUMP_FORCE,
-		maxVel: conf.maxVel || DEF_MAX_VEL,
-		curPlatform: null,
+		jumpForce: conf.jumpForce !== undefined ? conf.jumpForce : DEF_JUMP_FORCE,
 
 		update() {
 
-			this.move(0, this.velY);
+			this.move(0, velY);
 
 			const targets = this.resolve();
 			let justOff = false;
 
 			// check if loses current platform
-			if (this.curPlatform) {
-				if (!this.curPlatform.exists() || !this.isCollided(this.curPlatform)) {
-					this.curPlatform = null;
+			if (curPlatform) {
+				if (!curPlatform.exists() || !this.isCollided(curPlatform)) {
+					curPlatform = null;
 					justOff = true;
 				}
 			}
 
-			if (!this.curPlatform) {
+			if (!curPlatform) {
 
-				this.velY = Math.min(this.velY + gravity() * dt(), this.maxVel);
+				velY = Math.min(velY + gravity() * dt(), maxVel);
 
 				// check if grounded to a new platform
 				for (const target of targets) {
-					if (target.side === "bottom" && this.velY > 0) {
-						this.curPlatform = target.obj;
+					if (target.side === "bottom" && velY > 0) {
+						curPlatform = target.obj;
+						velY = 0;
 						if (!justOff) {
-							this.trigger("grounded");
+							this.trigger("grounded", curPlatform);
 						}
-						this.velY = 0;
-					} else if (target.side === "top" && this.velY < 0) {
-						this.velY = 0;
+					} else if (target.side === "top" && velY < 0) {
+						velY = 0;
+						this.trigger("headbump", target.obj);
 					}
 				}
 
@@ -3432,12 +3467,12 @@ function body(conf = {}) {
 		},
 
 		grounded() {
-			return this.curPlatform !== null;
+			return curPlatform !== null;
 		},
 
 		jump(force) {
-			this.curPlatform = null;
-			this.velY = -force || -this.jumpForce;
+			curPlatform = null;
+			velY = -force || -this.jumpForce;
 		},
 
 	};
@@ -3463,6 +3498,20 @@ debug     *                     .            ~       +    .
 
 */
 
+const debug = {
+	paused: false,
+	timeScale: 1,
+	showArea: false,
+	hoverInfo: false,
+	showLog: false,
+	logTime: 6,
+	logMax: 32,
+};
+
+function dbg() {
+	return debug;
+}
+
 function fps() {
 	return 1.0 / dt();
 }
@@ -3472,24 +3521,26 @@ function objCount() {
 	return scene.objs.size;
 }
 
-function pause(b) {
-	game.paused = b === undefined ? true : b;
-}
-
-function paused() {
-	return game.paused;
-}
-
 function stepFrame() {
 	gameFrame(true);
 }
 
 function error(msg) {
 	console.error(msg);
+	game.log.unshift({
+		type: "error",
+		msg: msg,
+		timer: 0,
+	});
 }
 
 function log(msg) {
 	console.log(msg);
+	game.log.unshift({
+		type: "log",
+		msg: msg,
+		timer: 0,
+	});
 }
 
 /*
@@ -3622,144 +3673,132 @@ function addLevel(arr, conf = {}) {
 
 }
 
-// life cycle
-kaboom.init = init;
-kaboom.start = start;
-
-// asset load
-kaboom.loadRoot = loadRoot;
-kaboom.loadSprite = loadSprite;
-kaboom.loadAseprite = loadAseprite;
-kaboom.loadSound = loadSound;
-kaboom.loadFont = loadFont;
-kaboom.getSprite = getSprite;
-
-// query
-kaboom.width = width;
-kaboom.height = height;
-kaboom.dt = dt;
-kaboom.time = time;
-
-// scene
-kaboom.scene = scene;
-kaboom.go = go;
-
-// misc
-kaboom.layers = layers;
-kaboom.camPos = camPos;
-kaboom.camScale = camScale;
-kaboom.camRot = camRot;
-kaboom.camShake = camShake;
-kaboom.camIgnore = camIgnore;
-kaboom.gravity = gravity;
-
-// obj
-kaboom.add = add;
-kaboom.readd = readd;
-kaboom.destroy = destroy;
-kaboom.destroyAll = destroyAll;
-kaboom.get = get;
-kaboom.every = every;
-
-// comps
-kaboom.pos = pos;
-kaboom.scale = scale;
-kaboom.rotate = rotate;
-kaboom.color = color;
-kaboom.origin = origin;
-kaboom.layer = layer;
-kaboom.area = area;
-kaboom.sprite = sprite;
-kaboom.text = text;
-kaboom.rect = rect;
-kaboom.solid = solid;
-kaboom.timer = timer;
-kaboom.body = body;
-
-// group events
-kaboom.on = on;
-kaboom.action = action;
-kaboom.render = render;
-kaboom.collides = collides;
-kaboom.overlaps = overlaps;
-kaboom.clicks = clicks;
-
-// input
-kaboom.keyDown = keyDown;
-kaboom.keyPress = keyPress;
-kaboom.keyPressRep = keyPressRep;
-kaboom.keyRelease = keyRelease;
-kaboom.charInput = charInput;
-kaboom.mouseDown = mouseDown;
-kaboom.mouseClick = mouseClick;
-kaboom.mouseRelease = mouseRelease;
-kaboom.mousePos = mousePos;
-kaboom.keyIsDown = keyIsDown;
-kaboom.keyIsPressed = keyIsPressed;
-kaboom.keyIsPressedRep = keyIsPressedRep;
-kaboom.keyIsReleased = keyIsReleased;
-kaboom.mouseIsDown = mouseIsDown;
-kaboom.mouseIsClicked = mouseIsClicked;
-kaboom.mouseIsReleased = mouseIsReleased;
-
-// timer
-kaboom.loop = loop;
-kaboom.wait = wait;
-
-// audio
-kaboom.play = play;
-kaboom.volume = volume;
-
-// math
-kaboom.makeRng = makeRng;
-kaboom.rand = rand;
-kaboom.randSeed = randSeed;
-kaboom.randl = randl;
-kaboom.vec2 = vec2;
-kaboom.rgb = rgb;
-kaboom.rgba = rgba;
-kaboom.quad = quad;
-kaboom.choose = choose;
-kaboom.chance = chance;
-kaboom.lerp = lerp;
-kaboom.map = map;
-kaboom.wave = wave;
-
-// raw draw
-kaboom.drawSprite = drawSprite;
-kaboom.drawText = drawText;
-kaboom.drawRect = drawRect;
-kaboom.drawRectStroke = drawRectStroke;
-kaboom.drawLine = drawLine;
-kaboom.drawPoly = drawPoly;
-kaboom.drawCircle = drawCircle;
-
-// debug
-kaboom.objCount = objCount;
-kaboom.fps = fps;
-kaboom.pause = pause;
-kaboom.paused = paused;
-kaboom.stepFrame = stepFrame;
-
-// level
-kaboom.addLevel = addLevel;
-
-// make every function global
-kaboom.global = () => {
-	for (const func in kaboom) {
-		if (typeof(kaboom[func]) !== "function") {
-			continue;
-		}
-		if (func === "import") {
-			continue;
-		}
-		Object.defineProperty(window, func, {
-			value: kaboom[func],
-			writable: false,
-		});
-	}
+const lib = {
+	start,
+	// asset load
+	loadRoot,
+	loadSprite,
+	loadSound,
+	loadFont,
+	newLoader,
+	// query
+	width,
+	height,
+	dt,
+	time,
+	screenshot,
+	// scene
+	scene,
+	go,
+	sceneData,
+	// misc
+	layers,
+	camPos,
+	camScale,
+	camRot,
+	camShake,
+	camIgnore,
+	gravity,
+	// obj
+	add,
+	readd,
+	destroy,
+	destroyAll,
+	get,
+	every,
+	// comps
+	pos,
+	scale,
+	rotate,
+	color,
+	origin,
+	layer,
+	area,
+	sprite,
+	text,
+	rect,
+	solid,
+	timer,
+	body,
+	// group events
+	on,
+	action,
+	render,
+	collides,
+	overlaps,
+	clicks,
+	// input
+	keyDown,
+	keyPress,
+	keyPressRep,
+	keyRelease,
+	charInput,
+	mouseDown,
+	mouseClick,
+	mouseRelease,
+	mousePos,
+	keyIsDown,
+	keyIsPressed,
+	keyIsPressedRep,
+	keyIsReleased,
+	mouseIsDown,
+	mouseIsClicked,
+	mouseIsReleased,
+	// timer
+	loop,
+	wait,
+	// audio
+	play,
+	volume,
+	// math
+	makeRng,
+	rand,
+	randSeed,
+	vec2,
+	rgb,
+	rgba,
+	quad,
+	choose,
+	chance,
+	lerp,
+	map,
+	wave,
+	// raw draw
+	drawSprite,
+	drawText,
+	drawRect,
+	drawRectStroke,
+	drawLine,
+	drawPoly,
+	drawCircle,
+	// debug
+	dbg,
+	objCount,
+	fps,
+	stepFrame,
+	log,
+	error,
+	// level
+	addLevel,
 };
 
-window.kaboom = kaboom;
+if (gconf.plugins) {
+	for (const src of gconf.plugins) {
+		const map = src(lib);
+		for (const k in map) {
+			lib[k] = map[k];
+		}
+	}
+}
 
-})();
+if (gconf.global) {
+	for (const k in lib) {
+		window[k] = lib[k];
+	}
+}
+
+appInit();
+
+return lib;
+
+};
