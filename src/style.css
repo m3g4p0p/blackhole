@@ -11,6 +11,10 @@ canvas {
   border: 3px solid white;
 }
 
+.is-fullscreen canvas {
+  border: none;
+}
+
 .mouse-control canvas {
   cursor: crosshair;
 }
