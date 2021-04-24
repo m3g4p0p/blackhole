@@ -1,5 +1,6 @@
 import './vendor/kaboom.js'
 import { spawnPlugin, displayPlugin } from './plugins.js'
+import { delta } from './components.js'
 
 const MOVE = {
   SHIP: { X: 100, Y: 10 },
@@ -75,30 +76,12 @@ function rotate (x, y, angle) {
   )
 }
 
-function posDelta (object) {
-  const lastPos = object.pos.clone()
-  const delta = k.vec2(0, 0)
-
-  object.on('update', () => {
-    delta.x = object.pos.x - lastPos.x
-    delta.y = object.pos.y - lastPos.y
-    Object.assign(lastPos, object.pos)
-  })
-
-  return delta
-}
-
 function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
 
 k.scene('start', () => {
   const info = k.addMessage([], textLeft, 300)
-
-  const instructions = k.addMessage([
-    'Press SPACE to start falling!',
-    'Use UP and DOWN to adjust the difficulty.'
-  ], textLeft, 200, 2)
 
   function updateInfo () {
     info.setText([
@@ -112,19 +95,36 @@ k.scene('start', () => {
     updateInfo()
   }
 
-  k.mouseClick(() => {
-    const mousePos = k.mousePos()
-
-    if (instructions.hasPt(mousePos)) {
-      return k.go('main', true)
-    }
-
-    if (mousePos.y < instructions.pos.y) {
+  if (isMobile) {
+    k.add([
+      k.text('+', 32),
+      k.origin('topright'),
+      k.pos(k.width() - 20, 20)
+    ]).clicks(() => {
       setDificulty(difficulty + 1)
-    } else {
+    })
+
+    k.add([
+      k.text('-', 32),
+      k.origin('topleft'),
+      k.pos(20, 20)
+    ]).clicks(() => {
       setDificulty(difficulty - 1)
-    }
-  })
+    })
+
+    k.add([
+      k.text('START', 32),
+      k.origin('top'),
+      k.pos(k.width() / 2, 20)
+    ]).clicks(() => {
+      k.go('main', true)
+    })
+  } else {
+    k.addMessage([
+      'Press SPACE to start falling!',
+      'Use UP and DOWN to adjust the difficulty.'
+    ], textLeft, 200, 2)
+  }
 
   k.keyPress('space', () => {
     k.go('main', false)
@@ -174,10 +174,9 @@ k.scene('main', mouseControl => {
     k.rect(SIZE.SHIP.X, SIZE.SHIP.Y),
     k.color(1, 1, 1),
     k.rotate(0),
-    k.origin('center')
+    k.origin('center'),
+    delta()
   ])
-
-  const shipDelta = posDelta(ship)
 
   function addScore (value) {
     score.value += value
@@ -351,7 +350,7 @@ k.scene('main', mouseControl => {
       followMouse()
     }
 
-    if (shipDelta.y < -1) {
+    if (ship.delta.y < -1) {
       sustainFlame()
     }
 
