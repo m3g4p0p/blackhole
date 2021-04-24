@@ -95,6 +95,11 @@ function toggleMouseClass (value) {
 k.scene('start', () => {
   const info = k.addMessage([], textLeft, 300)
 
+  const instructions = k.addMessage([
+    'Press SPACE to start falling!',
+    'Use UP and DOWN to adjust the difficulty.'
+  ], textLeft, 200, 2)
+
   function updateInfo () {
     info.setText([
       `Difficulty: ${difficulty}`,
@@ -104,15 +109,21 @@ k.scene('start', () => {
 
   function setDificulty (value) {
     difficulty = Math.max(1, Math.min(10, value))
+    updateInfo()
   }
 
-  k.addMessage([
-    'Press SPACE to start falling!',
-    'Use UP and DOWN to adjust the difficulty.'
-  ], textLeft, 200, 2)
-
   k.mouseClick(() => {
-    k.go('main', true)
+    const mousePos = k.mousePos()
+
+    if (instructions.hasPt(mousePos)) {
+      return k.go('main', true)
+    }
+
+    if (mousePos.y < instructions.pos.y) {
+      setDificulty(difficulty + 1)
+    } else {
+      setDificulty(difficulty - 1)
+    }
   })
 
   k.keyPress('space', () => {
