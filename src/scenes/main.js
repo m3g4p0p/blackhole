@@ -13,7 +13,6 @@ import {
 } from '../constants.js'
 
 import { k } from '../game.js'
-import { delta } from '../components.js'
 import { cap, hideAddressBar, rotate, toggleMouseClass } from '../util.js'
 
 export default function gameScene (difficulty, mouseControl) {
@@ -48,7 +47,7 @@ export default function gameScene (difficulty, mouseControl) {
     k.color(1, 1, 1),
     k.rotate(0),
     k.origin('center'),
-    delta()
+    k.delta()
   ])
 
   function addScore (value) {
@@ -115,7 +114,7 @@ export default function gameScene (difficulty, mouseControl) {
     const offset = rotate(0, ship.height / 2, -ship.angle)
     const spin = rotate(0, SIZE.FLAME.Y, -ship.angle).x
 
-    k.spawn([
+    k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
       k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
@@ -123,25 +122,27 @@ export default function gameScene (difficulty, mouseControl) {
       k.scale(1),
       k.layer('background'),
       k.origin('center'),
+      k.decay(DECAY.FLAME),
       'flame',
       { spin }
     ])
   }
 
   function spawnFire () {
-    k.spawn([
+    k.add([
       k.rect(ship.width, ship.width),
       k.pos(ship.pos.x, ship.pos.y),
       k.rotate(0),
       k.color(1, 0, 0),
       k.layer('background'),
       k.origin('center'),
+      k.decay(DECAY.FIRE),
       'fire'
     ])
   }
 
   function spawnStar (y = 0) {
-    k.spawn([
+    k.add([
       k.rect(SIZE.STAR.X, SIZE.STAR.Y),
       k.pos(
         k.rand(0, k.width() - SIZE.STAR.X),
@@ -149,12 +150,13 @@ export default function gameScene (difficulty, mouseControl) {
       ),
       k.color(1, 1, 1, k.rand(0.1, 0.9)),
       k.layer('background'),
+      k.age(),
       'star'
     ])
   }
 
   function spawnTail (debris) {
-    k.spawn([
+    k.add([
       k.scale(1),
       k.color(0.5, 0.5, 0.5),
       k.pos(debris.pos),
@@ -162,6 +164,7 @@ export default function gameScene (difficulty, mouseControl) {
       k.rotate(debris.angle),
       k.origin('center'),
       k.layer('background'),
+      k.decay(DECAY.TAIL),
       'tail'
     ])
   }
@@ -204,7 +207,7 @@ export default function gameScene (difficulty, mouseControl) {
   function sustainFlame () {
     const lastFlame = k.get('flame').pop()
 
-    if (!lastFlame || lastFlame.getAge() > THROTTLE.FLAME) {
+    if (!lastFlame || lastFlame.age > THROTTLE.FLAME) {
       spawnFlame()
     }
   }
@@ -250,7 +253,7 @@ export default function gameScene (difficulty, mouseControl) {
   k.on('decay', console.log)
 
   k.action('star', star => {
-    star.pos.y -= star.getAge() / gravity.value * star.color.a
+    star.pos.y -= star.age / gravity.value * star.color.a
 
     if (star.pos.y < -star.height) {
       k.destroy(star)
@@ -258,23 +261,23 @@ export default function gameScene (difficulty, mouseControl) {
     }
   })
 
-  k.withAgeDelta('flame', (flame, delta) => {
-    flame.color = k.rgba(1, delta, 0, delta)
-    flame.scale = k.vec2(0.5 + delta / 2, 1)
+  k.action('flame', flame => {
+    flame.color = k.rgba(1, flame.decay, 0, flame.decay)
+    flame.scale = k.vec2(0.5 + flame.decay / 2, 1)
     flame.pos.x += flame.spin
-  }, DECAY.FLAME)
+  })
 
-  k.withAgeDelta('fire', (fire, delta) => {
-    const heat = delta - k.rand(0, delta)
+  k.action('fire', fire => {
+    const heat = fire.decay - k.rand(0, fire.decay)
 
-    fire.color = k.rgba(heat, k.rand(0, heat / 2), 0, delta)
+    fire.color = k.rgba(heat, k.rand(0, heat / 2), 0, fire.decay)
     fire.angle += k.dt()
-  }, DECAY.FIRE)
+  })
 
-  k.withAgeDelta('tail', (tail, delta) => {
-    tail.color = k.rgba(0.5, 0.5, 0.5, delta)
-    tail.scale = k.vec2(delta, delta)
-  }, DECAY.TAIL)
+  k.action('tail', tail => {
+    tail.color = k.rgba(0.5, 0.5, 0.5, tail.decay)
+    tail.scale = k.vec2(tail.decay, tail.decay)
+  })
 
   k.action('boost', boost => {
     addGravitySpin(boost, SPIN.BOOST)

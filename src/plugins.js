@@ -2,28 +2,56 @@ function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
 }
 
-export function spawnPlugin (k) {
-  return {
-    spawn (components) {
-      const spawned = Date.now()
+export function componentsPlugin (k) {
+  function age () {
+    const created = Date.now()
 
-      return k.add([...components, {
-        getAge: () => Date.now() - spawned
-      }])
-    },
+    return {
+      age: 0,
 
-    withAgeDelta (tag, fn, scale) {
-      return k.action(tag, object => {
-        const delta = 1 - object.getAge() / scale
-
-        if (delta > 0) {
-          return fn(object, delta)
-        }
-
-        return k.destroy(object)
-      })
+      update () {
+        this.age = Date.now() - created
+      }
     }
   }
+
+  function decay (maxAge) {
+    return {
+      decay: 1,
+
+      add () {
+        this.use(age())
+      },
+
+      update () {
+        this.decay = 1 - this.age / maxAge
+
+        if (this.decay <= 0) {
+          k.destroy(this)
+        }
+      }
+    }
+  }
+
+  function delta () {
+    const lastPos = k.pos()
+
+    return {
+      delta: k.vec2(0, 0),
+
+      add () {
+        Object.assign(lastPos, this.pos)
+      },
+
+      update () {
+        this.delta.x = this.pos.x - lastPos.x
+        this.delta.y = this.pos.y - lastPos.y
+        Object.assign(lastPos, this.pos)
+      }
+    }
+  }
+
+  return { age, decay, delta }
 }
 
 export function displayPlugin (k) {

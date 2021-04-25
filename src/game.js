@@ -1,6 +1,6 @@
 import './vendor/kaboom.js'
 import { SIZE } from './constants.js'
-import { spawnPlugin, displayPlugin } from './plugins.js'
+import { componentsPlugin, displayPlugin } from './plugins.js'
 import { hideAddressBar } from './util.js'
 import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
@@ -15,7 +15,8 @@ export const k = window.k = window.kaboom({
   fullscreen: isMobile,
   width: isMobile ? null : SIZE.GAME.X,
   height: isMobile ? null : SIZE.GAME.Y,
-  plugins: [spawnPlugin, displayPlugin]
+  plugins: [componentsPlugin, displayPlugin],
+  debug: window.location.hostname === '127.0.0.1'
 })
 
 export const textLeft = isMobile ? 20 : 200
