@@ -1,153 +1,22 @@
-import './vendor/kaboom.js'
-import { spawnPlugin, displayPlugin } from './plugins.js'
-import { delta } from './components.js'
+import {
+  CAM_THRESHOLD,
+  FACTOR,
+  INITIAL_GRAVITY,
+  JUMP_FORCE,
+  DECAY,
+  MOVE,
+  SIZE,
+  SPIN,
+  STARS,
+  THROTTLE,
+  TIME
+} from '../constants.js'
 
-const MOVE = {
-  SHIP: { X: 100, Y: 10 },
-  DEBRIS: { X: 100, Y: 100 }
-}
+import { k } from '../game.js'
+import { delta } from '../components.js'
+import { cap, hideAddressBar, rotate, toggleMouseClass } from '../util.js'
 
-const SIZE = {
-  GAME: { X: 800, Y: 800 },
-  SHIP: { X: 20, Y: 40 },
-  BOOST: { X: 10, Y: 10 },
-  FLAME: { X: 20, Y: 5 },
-  STAR: { X: 5, Y: 5 },
-  DEBRIS: {
-    MIN: { X: 10, Y: 10 },
-    MAX: { X: 25, Y: 25 }
-  }
-}
-
-const TIME = {
-  BOOST: 5,
-  DEBRIS: 3
-}
-
-const FACTOR = {
-  GRAVITY: 100,
-  SCORE: 20
-}
-
-const SPIN = {
-  BOOST: -1000,
-  DEBRIS: 500
-}
-
-const DECAY = {
-  FLAME: 1000,
-  FIRE: 500,
-  TAIL: 200
-}
-
-const THROTTLE = {
-  FLAME: 40
-}
-
-const INITIAL_GRAVITY = 1000
-const STARS = 10
-const CAM_THRESHOLD = 20
-const JUMP_FORCE = 480
-
-const isMobile = (
-  window.innerWidth < SIZE.GAME.X ||
-  window.innerHeight < SIZE.GAME.Y
-)
-
-const k = window.k = window.kaboom({
-  fullscreen: isMobile,
-  width: isMobile ? null : SIZE.GAME.X,
-  height: isMobile ? null : SIZE.GAME.Y,
-  plugins: [spawnPlugin, displayPlugin]
-})
-
-const textLeft = isMobile ? 20 : 200
-let difficulty = 1
-let highscore = 0
-
-function cap (value, absMax) {
-  return Math.max(absMax, Math.abs(value)) * Math.sign(value)
-}
-
-function rotate (x, y, angle) {
-  return k.vec2(
-    x * Math.cos(angle) - y * Math.sin(angle),
-    x * Math.sin(angle) + y * Math.cos(angle)
-  )
-}
-
-function toggleMouseClass (value) {
-  document.body.classList.toggle('mouse-control', value)
-}
-
-function hideAddressBar () {
-  window.scrollTo(0, 1)
-}
-
-k.scene('start', () => {
-  const info = k.addMessage([], textLeft, 300)
-
-  function updateInfo () {
-    info.setText([
-      `Difficulty: ${difficulty}`,
-      `Highscore: ${highscore}`
-    ])
-  }
-
-  function setDificulty (value) {
-    difficulty = Math.max(1, Math.min(10, value))
-    updateInfo()
-  }
-
-  if (isMobile) {
-    k.add([
-      k.text('+', 32),
-      k.origin('topright'),
-      k.pos(k.width() - 20, 20)
-    ]).clicks(() => {
-      setDificulty(difficulty + 1)
-    })
-
-    k.add([
-      k.text('-', 32),
-      k.origin('topleft'),
-      k.pos(20, 20)
-    ]).clicks(() => {
-      setDificulty(difficulty - 1)
-    })
-
-    k.add([
-      k.text('START', 32),
-      k.origin('top'),
-      k.pos(k.width() / 2, 20)
-    ]).clicks(() => {
-      k.go('main', true)
-    })
-  } else {
-    k.addMessage([
-      'Press SPACE to start falling!',
-      'Use UP and DOWN to adjust the difficulty.'
-    ], textLeft, 200, 2)
-  }
-
-  k.keyPress('space', () => {
-    k.go('main', false)
-  })
-
-  k.keyPress('up', () => {
-    setDificulty(difficulty + 1)
-    updateInfo()
-  })
-
-  k.keyPress('down', () => {
-    setDificulty(difficulty - 1)
-    updateInfo()
-  })
-
-  updateInfo()
-})
-
-k.scene('main', mouseControl => {
+export default function gameScene (difficulty, mouseControl) {
   let isWrecked = false
 
   k.layers([
@@ -378,6 +247,8 @@ k.scene('main', mouseControl => {
     k.destroy(debris)
   })
 
+  k.on('decay', console.log)
+
   k.action('star', star => {
     star.pos.y -= star.getAge() / gravity.value * star.color.a
 
@@ -467,26 +338,4 @@ k.scene('main', mouseControl => {
   for (let i = 0; i < STARS; i++) {
     spawnStar(k.rand(0, k.height()))
   }
-})
-
-k.scene('death', (score, gotWrecked) => {
-  k.addMessage([
-    gotWrecked
-      ? 'Wrecked by space debris!'
-      : k.choose([
-        'Gravity ate you up!',
-        'Newton fucked you!',
-        'There\'s no light at the end of the wormhole!',
-        'You could not resist the force of gravity!'
-      ]),
-    `Your score was ${score}.`
-  ], textLeft, 200, 2)
-
-  highscore = Math.max(score, highscore)
-  k.wait(3, () => k.go('start'))
-  toggleMouseClass(false)
-})
-
-k.start('start')
-document.body.classList.toggle('is-fullscreen', isMobile)
-window.addEventListener('load', hideAddressBar)
+}

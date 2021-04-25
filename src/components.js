@@ -1,3 +1,21 @@
+import { k } from './game.js'
+
+export function decay (maxAge) {
+  const created = Date.now()
+
+  return {
+    life: 1,
+
+    update () {
+      this.life = 1 - (Date.now() - created) / maxAge
+
+      if (this.life <= 0) {
+        this.use('decayed')
+      }
+    }
+  }
+}
+
 export function delta () {
   const lastPos = k.pos()
 

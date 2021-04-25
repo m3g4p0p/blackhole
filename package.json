@@ -1,10 +1,4 @@
 {
-  "standard": {
-    "env": {
-      "browser": true
-    },
-    "globals": "k"
-  },
   "scripts": {
     "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
   },
