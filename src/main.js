@@ -1,5 +1,6 @@
 import './vendor/kaboom.js'
-import { spawnPlugin, infoPlugin } from './plugins.js'
+import { spawnPlugin, displayPlugin } from './plugins.js'
+import { delta } from './components.js'
 
 const MOVE = {
   SHIP: { X: 100, Y: 10 },
@@ -48,18 +49,21 @@ const STARS = 10
 const CAM_THRESHOLD = 20
 const JUMP_FORCE = 480
 
+const isMobile = (
+  window.innerWidth < SIZE.GAME.X ||
+  window.innerHeight < SIZE.GAME.Y
+)
+
 const k = window.k = window.kaboom({
-  width: SIZE.GAME.X,
-  height: SIZE.GAME.Y,
-  plugins: [spawnPlugin, infoPlugin]
+  fullscreen: isMobile,
+  width: isMobile ? null : SIZE.GAME.X,
+  height: isMobile ? null : SIZE.GAME.Y,
+  plugins: [spawnPlugin, displayPlugin]
 })
 
+const textLeft = isMobile ? 20 : 200
 let difficulty = 1
 let highscore = 0
-
-function join (lines, spacing = 1) {
-  return lines.join('\n'.repeat(spacing + 1))
-}
 
 function cap (value, absMax) {
   return Math.max(absMax, Math.abs(value)) * Math.sign(value)
@@ -72,59 +76,71 @@ function rotate (x, y, angle) {
   )
 }
 
-function posDelta (object) {
-  const lastPos = object.pos.clone()
-  const delta = k.vec2(0, 0)
-
-  object.on('update', () => {
-    delta.x = object.pos.x - lastPos.x
-    delta.y = object.pos.y - lastPos.y
-    Object.assign(lastPos, object.pos)
-  })
-
-  return delta
-}
-
 function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
 
+function hideAddressBar () {
+  window.scrollTo(0, 1)
+}
+
 k.scene('start', () => {
-  const info = k.add([
-    k.text(),
-    k.pos(200, 300)
-  ])
+  const info = k.addMessage([], textLeft, 300)
 
   function updateInfo () {
-    info.text = join([
+    info.setText([
       `Difficulty: ${difficulty}`,
       `Highscore: ${highscore}`
     ])
   }
 
-  k.add([
-    k.text(join([
+  function setDificulty (value) {
+    difficulty = Math.max(1, Math.min(10, value))
+    updateInfo()
+  }
+
+  if (isMobile) {
+    k.add([
+      k.text('+', 32),
+      k.origin('topright'),
+      k.pos(k.width() - 20, 20)
+    ]).clicks(() => {
+      setDificulty(difficulty + 1)
+    })
+
+    k.add([
+      k.text('-', 32),
+      k.origin('topleft'),
+      k.pos(20, 20)
+    ]).clicks(() => {
+      setDificulty(difficulty - 1)
+    })
+
+    k.add([
+      k.text('START', 32),
+      k.origin('top'),
+      k.pos(k.width() / 2, 20)
+    ]).clicks(() => {
+      k.go('main', true)
+    })
+  } else {
+    k.addMessage([
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
-    ], 2)),
-    k.pos(200, 200)
-  ])
-
-  k.mouseClick(() => {
-    k.go('main', true)
-  })
+    ], textLeft, 200, 2)
+  }
 
   k.keyPress('space', () => {
     k.go('main', false)
   })
 
   k.keyPress('up', () => {
-    difficulty = Math.min(10, difficulty + 1)
+    setDificulty(difficulty + 1)
     updateInfo()
   })
 
   k.keyPress('down', () => {
-    difficulty = Math.max(1, difficulty - 1)
+    setDificulty(difficulty - 1)
     updateInfo()
   })
 
@@ -162,10 +178,9 @@ k.scene('main', mouseControl => {
     k.rect(SIZE.SHIP.X, SIZE.SHIP.Y),
     k.color(1, 1, 1),
     k.rotate(0),
-    k.origin('center')
+    k.origin('center'),
+    delta()
   ])
-
-  const shipDelta = posDelta(ship)
 
   function addScore (value) {
     score.value += value
@@ -339,7 +354,7 @@ k.scene('main', mouseControl => {
       followMouse()
     }
 
-    if (shipDelta.y < -1) {
+    if (ship.delta.y < -1) {
       sustainFlame()
     }
 
@@ -447,6 +462,7 @@ k.scene('main', mouseControl => {
   k.loop(TIME.DEBRIS, spawnDebris)
   k.wait(TIME.BOOST, spawnBoost)
   toggleMouseClass(mouseControl)
+  hideAddressBar()
 
   for (let i = 0; i < STARS; i++) {
     spawnStar(k.rand(0, k.height()))
@@ -454,20 +470,17 @@ k.scene('main', mouseControl => {
 })
 
 k.scene('death', (score, gotWrecked) => {
-  k.add([
-    k.text(join([
-      gotWrecked
-        ? 'Wrecked by space debris!'
-        : k.choose([
-          'Gravity ate you up!',
-          'Newton fucked you!',
-          'There\'s no light at the end of the wormhole!',
-          'You could not resist the force of gravity!'
-        ]),
-      `Your score was ${score}.`
-    ], 2)),
-    k.pos(200, 200)
-  ])
+  k.addMessage([
+    gotWrecked
+      ? 'Wrecked by space debris!'
+      : k.choose([
+        'Gravity ate you up!',
+        'Newton fucked you!',
+        'There\'s no light at the end of the wormhole!',
+        'You could not resist the force of gravity!'
+      ]),
+    `Your score was ${score}.`
+  ], textLeft, 200, 2)
 
   highscore = Math.max(score, highscore)
   k.wait(3, () => k.go('start'))
@@ -475,3 +488,5 @@ k.scene('death', (score, gotWrecked) => {
 })
 
 k.start('start')
+document.body.classList.toggle('is-fullscreen', isMobile)
+window.addEventListener('load', hideAddressBar)

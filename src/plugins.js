@@ -1,3 +1,7 @@
+function join (lines, spacing = 1) {
+  return lines.join('\n'.repeat(spacing + 1))
+}
+
 export function spawnPlugin (k) {
   return {
     spawn (components) {
@@ -22,7 +26,7 @@ export function spawnPlugin (k) {
   }
 }
 
-export function infoPlugin (k) {
+export function displayPlugin (k) {
   return {
     addInfo (components, x, y, s = 1) {
       const width = k.width()
@@ -33,6 +37,20 @@ export function infoPlugin (k) {
         k.color(s, s, s),
         k.layer('info'),
         ...components
+      ])
+    },
+
+    addMessage (lines, x, y, spacing) {
+      return k.add([
+        k.text(join(lines, spacing), null, {
+          width: k.width() - 2 * x
+        }),
+        k.pos(x, y),
+        {
+          setText (lines) {
+            this.text = join(lines, spacing)
+          }
+        }
       ])
     }
   }
