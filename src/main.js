@@ -80,6 +80,10 @@ function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
 
+function hideAddressBar () {
+  window.scrollTo(0, 1)
+}
+
 k.scene('start', () => {
   const info = k.addMessage([], textLeft, 300)
 
@@ -458,6 +462,7 @@ k.scene('main', mouseControl => {
   k.loop(TIME.DEBRIS, spawnDebris)
   k.wait(TIME.BOOST, spawnBoost)
   toggleMouseClass(mouseControl)
+  hideAddressBar()
 
   for (let i = 0; i < STARS; i++) {
     spawnStar(k.rand(0, k.height()))
@@ -484,3 +489,4 @@ k.scene('death', (score, gotWrecked) => {
 
 k.start('start')
 document.body.classList.toggle('is-fullscreen', isMobile)
+window.addEventListener('load', hideAddressBar)
