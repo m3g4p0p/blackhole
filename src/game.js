@@ -28,3 +28,7 @@ k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
 window.addEventListener('load', hideAddressBar)
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(console.error)
+}

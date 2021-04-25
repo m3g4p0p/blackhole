@@ -1,8 +1,7 @@
-const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = env => ({
-  entry: './src/main.js',
+  entry: './src/game.js',
   module: {
     rules: [
       {

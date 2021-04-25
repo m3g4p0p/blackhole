@@ -1,0 +1,14 @@
+{
+  "name": "Black Hole",
+  "icons": [
+    {
+      "src": "icons/launcher-icon.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "index.html",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "black"
+}
