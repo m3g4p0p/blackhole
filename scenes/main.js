@@ -13,7 +13,7 @@ import {
 } from '../constants.js'
 
 import { k } from '../game.js'
-import { cap, hideAddressBar, rotate, toggleMouseClass } from '../util.js'
+import { cap, rotate, toggleMouseClass } from '../util.js'
 
 export default function gameScene (difficulty, mouseControl) {
   let isWrecked = false
@@ -336,7 +336,6 @@ export default function gameScene (difficulty, mouseControl) {
   k.loop(TIME.DEBRIS, spawnDebris)
   k.wait(TIME.BOOST, spawnBoost)
   toggleMouseClass(mouseControl)
-  hideAddressBar()
 
   for (let i = 0; i < STARS; i++) {
     spawnStar(k.rand(0, k.height()))

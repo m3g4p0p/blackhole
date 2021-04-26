@@ -1,18 +1,18 @@
 import { k, isMobile, textLeft } from '../game.js'
+import { toggleFullscreen } from '../util.js'
 
 let difficulty = 1
 let highscore = 0
-let deferredPrompt
+let deferredPrompt = null
 
 window.addEventListener('beforeinstallprompt', event => {
-  console.log(event)
   event.preventDefault()
   deferredPrompt = event
 })
 
 export default function startScene (score = 0) {
   const info = k.addMessage([], textLeft, 300)
-  let prompt
+  let promptText = null
 
   function updateInfo () {
     info.setText([
@@ -31,23 +31,44 @@ export default function startScene (score = 0) {
   if (isMobile) {
     k.addInfo([
       k.text('+', 32),
-      k.origin('topright')
+      k.origin('topright'),
+      'control'
     ], -20, 20).clicks(() => {
       setDificulty(difficulty + 1)
     })
 
     k.addInfo([
       k.text('-', 32),
-      k.origin('topleft')
+      k.origin('topleft'),
+      'control'
     ], 20, 20).clicks(() => {
       setDificulty(difficulty - 1)
     })
 
     k.addInfo([
       k.text('START', 32),
-      k.origin('top')
+      k.origin('top'),
+      'control'
     ], 0.5, 20).clicks(() => {
-      k.go('main', difficulty, true)
+      const countdown = k.addInfo([
+        k.text(3, 32),
+        k.origin('center')
+      ], 0.5, 0.5)
+
+      const handle = window.setInterval(() => {
+        const value = countdown.text - 1
+
+        if (value === -1) {
+          window.clearInterval(handle)
+          k.go('main', difficulty, true)
+        } else {
+          countdown.text = value
+        }
+      }, 1000)
+
+      toggleFullscreen(true)
+      k.destroy(info)
+      k.destroyAll('control')
     })
   } else {
     k.addMessage([
@@ -64,20 +85,23 @@ export default function startScene (score = 0) {
     k.addInfo([
       k.text(window.blackhole),
       k.origin('botright')
-    ], -20, -20)
+    ], -20, -20).clicks(() => {
+      window.location.assign('about.html')
+    })
   }
 
   k.render(() => {
-    if (prompt || !deferredPrompt) {
+    if (promptText || !deferredPrompt) {
       return
     }
 
-    prompt = k.addInfo([
+    promptText = k.addInfo([
       k.text('install', 16),
-      k.origin('bot')
+      k.origin('bot'),
+      'control'
     ], 0.5, -20)
 
-    prompt.clicks(() => {
+    promptText.clicks(() => {
       deferredPrompt.prompt()
       deferredPrompt = null
     })

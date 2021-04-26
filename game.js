@@ -1,7 +1,6 @@
 import './vendor/kaboom.js'
 import { SIZE } from './constants.js'
 import { componentsPlugin, displayPlugin } from './plugins.js'
-import { hideAddressBar } from './util.js'
 import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
@@ -29,7 +28,6 @@ k.scene('death', deathScene)
 k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
-window.addEventListener('load', hideAddressBar)
 
 if ('serviceWorker' in navigator && isSecure) {
   navigator.serviceWorker.register('sw.js').catch(console.error)

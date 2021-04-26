@@ -1,8 +1,9 @@
 /* eslint-disable no-undef */
-const cacheName = '0.1.8'
+const cacheName = '0.1.9'
 const urlsToCache = [
   '.',
   './style.css',
+  './about.html',
   './scenes/start.js',
   './scenes/death.js',
   './scenes/main.js',
