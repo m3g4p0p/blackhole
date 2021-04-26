@@ -1,13 +1,11 @@
 /* eslint-disable no-undef */
-const cacheName = '0.1.1'
+const cacheName = '0.1.2'
 const urlsToCache = [
   '.',
   './style.css',
-  './scenes',
   './scenes/start.js',
   './scenes/death.js',
   './scenes/main.js',
-  './vendor',
   './vendor/kaboom.js',
   './constants.js',
   './manifest.json',
@@ -15,7 +13,6 @@ const urlsToCache = [
   './sw.js',
   './plugins.js',
   './index.html',
-  './icons',
   './icons/launcher-icon.png',
   './icons/favicon.ico',
   './game.js'
@@ -32,6 +29,22 @@ self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request).then(response => {
       return response || fetch(event.request)
+    })
+  )
+})
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(name => {
+          if (name !== cacheName) {
+            return caches.delete(name)
+          }
+
+          return null
+        })
+      )
     })
   )
 })
