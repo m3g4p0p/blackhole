@@ -1,6 +1,21 @@
 /* eslint-disable no-undef */
-const cacheName = CACHE_NAME
-const urlsToCache = URLS_TO_CACHE
+const cacheName = '0.1.2'
+const urlsToCache = [
+  '.',
+  './style.css',
+  './scenes/start.js',
+  './scenes/death.js',
+  './scenes/main.js',
+  './vendor/kaboom.js',
+  './constants.js',
+  './manifest.json',
+  './util.js',
+  './plugins.js',
+  './index.html',
+  './icons/launcher-icon.png',
+  './icons/favicon.ico',
+  './game.js'
+]
 /* eslint-enable no-undef */
 
 self.addEventListener('install', event => {
