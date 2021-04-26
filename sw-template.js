@@ -16,3 +16,19 @@ self.addEventListener('fetch', event => {
     })
   )
 })
+
+self.addEventListener('activate', event => {
+  event.waitUntil(
+    caches.keys().then(cacheNames => {
+      return Promise.all(
+        cacheNames.map(name => {
+          if (name !== cacheName) {
+            return caches.delete(name)
+          }
+
+          return null
+        })
+      )
+    })
+  )
+})

@@ -1,3 +1,5 @@
-node_modules
-.vscode
 .venv
+.vscode
+node_modules
+yarn-error.log
+src/sw.js

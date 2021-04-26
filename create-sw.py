@@ -7,8 +7,8 @@ def dump(value):
     return json.dumps(value, indent=2).replace('"', "'")
 
 
-files = subprocess.run(['find', 'src'], capture_output=True)
-file_list = re.sub('^src', '.', files.stdout.decode(
+files = subprocess.run(['find', 'src', '-type', 'f'], capture_output=True)
+file_list = ['.'] + re.sub('^src', '.', files.stdout.decode(
     'utf-8').strip(), flags=re.MULTILINE).split('\n')
 
 with open('package.json') as package_json, \
