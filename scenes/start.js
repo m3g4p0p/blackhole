@@ -64,9 +64,11 @@ export default function startScene (score = 0) {
 
   if (deferredPrompt) {
     k.addInfo([
-      k.text('install')
+      k.text('install'),
+      k.origin('bot')
     ], 0.5, -20).clicks(() => {
       deferredPrompt.prompt()
+      deferredPrompt = null
     })
   }
 
