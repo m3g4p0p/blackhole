@@ -2,6 +2,13 @@ import { k, isMobile, textLeft } from '../game.js'
 
 let difficulty = 1
 let highscore = 0
+let deferredPrompt
+
+window.addEventListener('beforeinstallprompt', event => {
+  console.log(event)
+  event.preventDefault()
+  deferredPrompt = event
+})
 
 export default function startScene (score = 0) {
   const info = k.addMessage([], textLeft, 300)
@@ -21,27 +28,24 @@ export default function startScene (score = 0) {
   highscore = Math.max(score, highscore)
 
   if (isMobile) {
-    k.add([
+    k.addInfo([
       k.text('+', 32),
-      k.origin('topright'),
-      k.pos(k.width() - 20, 20)
-    ]).clicks(() => {
+      k.origin('topright')
+    ], -20, 20).clicks(() => {
       setDificulty(difficulty + 1)
     })
 
-    k.add([
+    k.addInfo([
       k.text('-', 32),
-      k.origin('topleft'),
-      k.pos(20, 20)
-    ]).clicks(() => {
+      k.origin('topleft')
+    ], 20, 20).clicks(() => {
       setDificulty(difficulty - 1)
     })
 
-    k.add([
+    k.addInfo([
       k.text('START', 32),
-      k.origin('top'),
-      k.pos(k.width() / 2, 20)
-    ]).clicks(() => {
+      k.origin('top')
+    ], 0.5, 20).clicks(() => {
       k.go('main', difficulty, true)
     })
   } else {
@@ -49,6 +53,21 @@ export default function startScene (score = 0) {
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
     ], textLeft, 200, 2)
+  }
+
+  if (window.blackhole) {
+    k.addInfo([
+      k.text(window.blackhole),
+      k.origin('botright')
+    ], -20, -20)
+  }
+
+  if (deferredPrompt) {
+    k.addInfo([
+      k.text('install')
+    ], 0.5, -20).clicks(() => {
+      deferredPrompt.prompt()
+    })
   }
 
   k.keyPress('space', () => {

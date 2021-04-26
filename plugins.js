@@ -1,3 +1,11 @@
+function position (value, size) {
+  if (Number.isInteger(value)) {
+    return (value + size) % size
+  }
+
+  return size * value
+}
+
 function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
 }
@@ -7,10 +15,8 @@ export function componentsPlugin (k) {
     const created = Date.now()
 
     return {
-      age: 0,
-
-      update () {
-        this.age = Date.now() - created
+      age () {
+        return Date.now() - created
       }
     }
   }
@@ -24,7 +30,7 @@ export function componentsPlugin (k) {
       },
 
       update () {
-        this.decay = 1 - this.age / maxAge
+        this.decay = 1 - this.age() / maxAge
 
         if (this.decay <= 0) {
           k.destroy(this)
@@ -57,11 +63,11 @@ export function componentsPlugin (k) {
 export function displayPlugin (k) {
   return {
     addInfo (components, x, y, s = 1) {
-      const width = k.width()
-      const height = k.height()
-
       return k.add([
-        k.pos((width + x) % width, (height + y) % height),
+        k.pos(
+          position(x, k.width()),
+          position(y, k.height())
+        ),
         k.color(s, s, s),
         k.layer('info'),
         ...components

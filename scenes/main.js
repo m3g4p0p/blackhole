@@ -207,7 +207,7 @@ export default function gameScene (difficulty, mouseControl) {
   function sustainFlame () {
     const lastFlame = k.get('flame').pop()
 
-    if (!lastFlame || lastFlame.age > THROTTLE.FLAME) {
+    if (!lastFlame || lastFlame.age() > THROTTLE.FLAME) {
       spawnFlame()
     }
   }
@@ -253,7 +253,7 @@ export default function gameScene (difficulty, mouseControl) {
   k.on('decay', console.log)
 
   k.action('star', star => {
-    star.pos.y -= star.age / gravity.value * star.color.a
+    star.pos.y -= star.age() / gravity.value * star.color.a
 
     if (star.pos.y < -star.height) {
       k.destroy(star)
