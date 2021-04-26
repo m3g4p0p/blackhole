@@ -9,8 +9,8 @@ def dump(value):
 
 
 files = subprocess.run(
-    ['find', 'src', '-type', 'f', '-not', '-name', 'sw.js'],
-    capture_output=True)
+    ['find', 'src', '-type', 'f', '-not', '-name', 'sw.js',
+     '-not', '-name', '*.json'], capture_output=True)
 
 file_list = ['.'] + re.sub('^src', '.', files.stdout.decode(
     'utf-8').strip(), flags=re.MULTILINE).split('\n')

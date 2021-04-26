@@ -7,10 +7,8 @@ export function componentsPlugin (k) {
     const created = Date.now()
 
     return {
-      age: 0,
-
-      update () {
-        this.age = Date.now() - created
+      age () {
+        return Date.now() - created
       }
     }
   }
@@ -24,7 +22,7 @@ export function componentsPlugin (k) {
       },
 
       update () {
-        this.decay = 1 - this.age / maxAge
+        this.decay = 1 - this.age() / maxAge
 
         if (this.decay <= 0) {
           k.destroy(this)

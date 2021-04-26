@@ -6,6 +6,8 @@ import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
 
+const develop = window.location.pathname.startsWith('/src/')
+
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||
   window.innerHeight < SIZE.GAME.Y
@@ -16,7 +18,7 @@ export const k = window.k = window.kaboom({
   width: isMobile ? null : SIZE.GAME.X,
   height: isMobile ? null : SIZE.GAME.Y,
   plugins: [componentsPlugin, displayPlugin],
-  debug: window.location.hostname === '127.0.0.1'
+  debug: develop
 })
 
 export const textLeft = isMobile ? 20 : 200
@@ -29,6 +31,6 @@ k.start('start')
 document.body.classList.toggle('is-fullscreen', isMobile)
 window.addEventListener('load', hideAddressBar)
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && !develop) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
 }
