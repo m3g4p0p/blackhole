@@ -1,5 +1,5 @@
 .venv
 .vscode
 node_modules
+dist
 yarn-error.log
-src/sw.js

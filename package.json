@@ -2,7 +2,7 @@
   "name": "blackhole",
   "version": "0.1.2",
   "scripts": {
-    "deploy": ".venv/bin/python create-sw.py && gh-pages -d src",
+    "deploy": ".venv/bin/python deploy.py && gh-pages -d dist",
     "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
   },
   "standard": {
