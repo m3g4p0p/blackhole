@@ -1,3 +1,11 @@
+function calcPos (value, size) {
+  if (Number.isInteger(value)) {
+    return (value + size) % size
+  }
+
+  return size * value
+}
+
 function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
 }
@@ -55,11 +63,11 @@ export function componentsPlugin (k) {
 export function displayPlugin (k) {
   return {
     addInfo (components, x, y, s = 1) {
-      const width = k.width()
-      const height = k.height()
-
       return k.add([
-        k.pos((width + x) % width, (height + y) % height),
+        k.pos(
+          calcPos(x, k.width()),
+          calcPos(y, k.height())
+        ),
         k.color(s, s, s),
         k.layer('info'),
         ...components

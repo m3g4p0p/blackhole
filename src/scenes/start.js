@@ -2,9 +2,16 @@ import { k, isMobile, textLeft } from '../game.js'
 
 let difficulty = 1
 let highscore = 0
+let deferredPrompt
+
+window.addEventListener('beforeinstallprompt', event => {
+  event.preventDefault()
+  deferredPrompt = event
+})
 
 export default function startScene (score = 0) {
   const info = k.addMessage([], textLeft, 300)
+  let promptText
 
   function updateInfo () {
     info.setText([
@@ -38,7 +45,7 @@ export default function startScene (score = 0) {
     k.addInfo([
       k.text('START', 32),
       k.origin('top')
-    ], k.width() / 2, 20).clicks(() => {
+    ], 0.5, 20).clicks(() => {
       k.go('main', difficulty, true)
     })
   } else {
@@ -46,14 +53,36 @@ export default function startScene (score = 0) {
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
     ], textLeft, 200, 2)
+
+    k.mouseClick(() => {
+      k.go('main', difficulty, true)
+    })
   }
 
   if (window.blackhole) {
     k.addInfo([
       k.text(window.blackhole),
       k.origin('botright')
-    ], -20, -20)
+    ], -20, -20).clicks(() => {
+      window.location.assign('about.html')
+    })
   }
+
+  k.render(() => {
+    if (promptText || !deferredPrompt) {
+      return
+    }
+
+    promptText = k.addInfo([
+      k.text('install', 16),
+      k.origin('bot')
+    ], 0.5, -20)
+
+    promptText.clicks(() => {
+      deferredPrompt.prompt()
+      deferredPrompt = null
+    })
+  })
 
   k.keyPress('space', () => {
     k.go('main', difficulty, false)
