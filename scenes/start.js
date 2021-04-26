@@ -53,6 +53,10 @@ export default function startScene (score = 0) {
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
     ], textLeft, 200, 2)
+
+    k.mouseClick(() => {
+      k.go('main', difficulty, true)
+    })
   }
 
   if (window.blackhole) {
@@ -64,7 +68,7 @@ export default function startScene (score = 0) {
 
   if (deferredPrompt) {
     k.addInfo([
-      k.text('install'),
+      k.text('install', 32),
       k.origin('bot')
     ], 0.5, -20).clicks(() => {
       deferredPrompt.prompt()
