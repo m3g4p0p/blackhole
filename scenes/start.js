@@ -12,6 +12,7 @@ window.addEventListener('beforeinstallprompt', event => {
 
 export default function startScene (score = 0) {
   const info = k.addMessage([], textLeft, 300)
+  let prompt
 
   function updateInfo () {
     info.setText([
@@ -66,15 +67,21 @@ export default function startScene (score = 0) {
     ], -20, -20)
   }
 
-  if (deferredPrompt) {
-    k.addInfo([
+  k.render(() => {
+    if (prompt || !deferredPrompt) {
+      return
+    }
+
+    prompt = k.addInfo([
       k.text('install', 16),
       k.origin('bot')
-    ], 0.5, -20).clicks(() => {
+    ], 0.5, -20)
+
+    prompt.clicks(() => {
       deferredPrompt.prompt()
       deferredPrompt = null
     })
-  }
+  })
 
   k.keyPress('space', () => {
     k.go('main', difficulty, false)

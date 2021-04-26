@@ -1,4 +1,4 @@
-function position (value, size) {
+function calcPos (value, size) {
   if (Number.isInteger(value)) {
     return (value + size) % size
   }
@@ -65,8 +65,8 @@ export function displayPlugin (k) {
     addInfo (components, x, y, s = 1) {
       return k.add([
         k.pos(
-          position(x, k.width()),
-          position(y, k.height())
+          calcPos(x, k.width()),
+          calcPos(y, k.height())
         ),
         k.color(s, s, s),
         k.layer('info'),

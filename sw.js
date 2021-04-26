@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const cacheName = '0.1.6'
+const cacheName = '0.1.7'
 const urlsToCache = [
   '.',
   './style.css',
