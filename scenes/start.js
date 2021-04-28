@@ -65,7 +65,11 @@ export default function startScene (score = 0) {
     ], textLeft, 200, 2)
 
     k.mouseClick(() => {
-      k.go('main', difficulty, true)
+      if (!k.get('control').some(control =>
+        control.isClicked()
+      )) {
+        k.go('main', difficulty, true)
+      }
     })
   }
 

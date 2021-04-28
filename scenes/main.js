@@ -252,7 +252,6 @@ export default function gameScene (difficulty, mouseControl) {
   ship.collides('boost', boost => {
     isGod = true
     ship.color.a = 0.7
-
     ship.jump(gravity.value / 2)
     music.detune(100)
     k.destroy(boost)
@@ -274,7 +273,6 @@ export default function gameScene (difficulty, mouseControl) {
     }
 
     isWrecked = true
-
     ship.jump(INITIAL_GRAVITY)
     k.destroy(debris)
     k.camShake(SHAKE.DEBRIS)
