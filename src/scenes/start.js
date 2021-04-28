@@ -1,5 +1,5 @@
 import { k, isMobile, textLeft } from '../game.js'
-import { toggleFullscreen } from '../util.js'
+import { requestFullscreen } from '../util.js'
 
 let difficulty = 1
 let highscore = 0
@@ -10,9 +10,35 @@ window.addEventListener('beforeinstallprompt', event => {
   deferredPrompt = event
 })
 
+function initInstallButton () {
+  let promptText = null
+
+  if (!window.blackhole) {
+    return
+  }
+
+  k.render(() => {
+    if (promptText || !deferredPrompt) {
+      return
+    }
+
+    promptText = k.addInfo([
+      k.text('install', 16),
+      k.origin('bot'),
+      'control'
+    ], 0.5, -20)
+
+    promptText.clicks(() => {
+      deferredPrompt.prompt()
+      deferredPrompt = null
+    })
+  })
+}
+
 export default function startScene (score = 0) {
   const info = k.addMessage([], textLeft, 300)
-  let promptText = null
+
+  highscore = Math.max(score, highscore)
 
   function updateInfo () {
     info.setText([
@@ -21,20 +47,18 @@ export default function startScene (score = 0) {
     ])
   }
 
-  function setDificulty (value) {
+  function setDifficulty (value) {
     difficulty = Math.max(1, Math.min(10, value))
     updateInfo()
   }
 
-  highscore = Math.max(score, highscore)
-
-  if (isMobile) {
+  function initMobileControls () {
     k.addInfo([
       k.text('+', 32),
       k.origin('topright'),
       'control'
     ], -20, 20).clicks(() => {
-      setDificulty(difficulty + 1)
+      setDifficulty(difficulty + 1)
     })
 
     k.addInfo([
@@ -42,7 +66,7 @@ export default function startScene (score = 0) {
       k.origin('topleft'),
       'control'
     ], 20, 20).clicks(() => {
-      setDificulty(difficulty - 1)
+      setDifficulty(difficulty - 1)
     })
 
     k.addInfo([
@@ -54,11 +78,13 @@ export default function startScene (score = 0) {
         k.go('main', difficulty, true)
       })
 
-      toggleFullscreen(true)
       k.destroy(info)
       k.destroyAll('control')
+      requestFullscreen()
     })
-  } else {
+  }
+
+  function initDesktopControls () {
     k.addMessage([
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
@@ -78,34 +104,24 @@ export default function startScene (score = 0) {
     })
   }
 
-  k.render(() => {
-    if (promptText || !deferredPrompt) {
-      return
-    }
-
-    promptText = k.addInfo([
-      k.text('install', 16),
-      k.origin('bot'),
-      'control'
-    ], 0.5, -20)
-
-    promptText.clicks(() => {
-      deferredPrompt.prompt()
-      deferredPrompt = null
-    })
-  })
+  if (isMobile) {
+    initMobileControls()
+    initInstallButton()
+  } else {
+    initDesktopControls()
+  }
 
   k.keyPress('space', () => {
     k.go('main', difficulty, false)
   })
 
   k.keyPress('up', () => {
-    setDificulty(difficulty + 1)
+    setDifficulty(difficulty + 1)
     updateInfo()
   })
 
   k.keyPress('down', () => {
-    setDificulty(difficulty - 1)
+    setDifficulty(difficulty - 1)
     updateInfo()
   })
 

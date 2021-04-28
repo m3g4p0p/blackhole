@@ -5,8 +5,6 @@ import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
 
-export const isSecure = window.location.protocol === 'https:'
-
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||
   window.innerHeight < SIZE.GAME.Y
@@ -32,6 +30,6 @@ k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
 
-if ('serviceWorker' in navigator && isSecure) {
+if ('serviceWorker' in navigator && window.blackhole) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
 }

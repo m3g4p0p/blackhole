@@ -19,6 +19,7 @@ import { cap, rotate, toggleMouseClass } from '../util.js'
 export default function gameScene (difficulty, mouseControl) {
   const music = k.play('soundtrack')
   let isWrecked = false
+  let hasShield = false
 
   music.loop()
 
@@ -62,7 +63,6 @@ export default function gameScene (difficulty, mouseControl) {
   function addGravity (value) {
     gravity.value = Math.max(INITIAL_GRAVITY, gravity.value + value)
     gravity.height = (gravity.value - INITIAL_GRAVITY) / 100
-    music.detune((gravity.value - INITIAL_GRAVITY) / 50)
     k.gravity(gravity.value)
   }
 
@@ -123,7 +123,11 @@ export default function gameScene (difficulty, mouseControl) {
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
       k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
-      k.color(1, 1, 0),
+      k.color(
+        hasShield ? 0 : 1,
+        1,
+        hasShield ? 1 : 0
+      ),
       k.scale(1),
       k.layer('background'),
       k.origin('center'),
@@ -193,6 +197,29 @@ export default function gameScene (difficulty, mouseControl) {
     ])
   }
 
+  function spawnShield () {
+    k.destroyAll('shield')
+
+    hasShield = true
+    music.detune(100)
+
+    const shield = k.add([
+      k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
+      k.pos(ship.pos),
+      k.color(0, 1, 1),
+      k.rotate(ship.angle),
+      k.origin('center'),
+      k.layer('background'),
+      k.decay(DECAY.SHIELD),
+      'shield'
+    ])
+
+    shield.on('destroy', () => {
+      hasShield = false
+      music.detune(0)
+    })
+  }
+
   function followMouse () {
     const mousePos = k.mousePos()
     const width = k.width()
@@ -251,14 +278,19 @@ export default function gameScene (difficulty, mouseControl) {
     k.camShake(SHAKE.BOOST)
     addScore(difficulty * FACTOR.SCORE)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
+    spawnShield()
   })
 
   ship.collides('debris', debris => {
-    isWrecked = true
+    if (hasShield) {
+      debris.color = k.rgba(1, 0.5, 0)
+      return
+    }
 
+    isWrecked = true
     ship.jump(INITIAL_GRAVITY)
-    k.destroy(debris)
     k.camShake(SHAKE.DEBRIS)
+    k.destroy(debris)
   })
 
   k.action('star', star => {
@@ -271,7 +303,9 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   k.action('flame', flame => {
-    flame.color = k.rgba(1, flame.decay, 0, flame.decay)
+    const { r, b } = flame.color
+
+    flame.color = k.rgba(r, flame.decay, b, flame.decay)
     flame.scale = k.vec2(0.5 + flame.decay / 2, 1)
     flame.pos.x += flame.spin
   })
@@ -310,6 +344,12 @@ export default function gameScene (difficulty, mouseControl) {
     )
 
     spawnTail(debris)
+  })
+
+  k.action('shield', shield => {
+    shield.pos = ship.pos
+    shield.angle = ship.angle
+    shield.color.a = shield.decay
   })
 
   k.gravity(INITIAL_GRAVITY)

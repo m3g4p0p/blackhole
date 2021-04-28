@@ -15,12 +15,8 @@ export function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
 
-export function toggleFullscreen (fullscreen) {
-  if (!fullscreen) {
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(console.error)
-    }
-
+export function requestFullscreen () {
+  if (document.fullscreenElement) {
     return
   }
 

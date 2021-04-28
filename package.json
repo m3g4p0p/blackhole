@@ -1,6 +1,6 @@
 {
   "name": "blackhole",
-  "version": "0.1.9",
+  "version": "0.1.12",
   "scripts": {
     "deploy": "yarn version --patch --no-git-tag-version && .venv/bin/python deploy.py && gh-pages -d dist",
     "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
