@@ -214,6 +214,7 @@ export default function gameScene (difficulty, mouseControl) {
   function smashDebris (debris) {
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
+    addScore(difficulty * FACTOR.SCORE.DEBRIS)
   }
 
   function followMouse () {
@@ -281,7 +282,7 @@ export default function gameScene (difficulty, mouseControl) {
     ship.jump(gravity.value / 2)
     k.destroy(boost)
     k.camShake(SHAKE.BOOST)
-    addScore(difficulty * FACTOR.SCORE)
+    addScore(difficulty * FACTOR.SCORE.BOOST)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
 
     if (!isWrecked) {
@@ -290,13 +291,14 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   ship.collides('debris', debris => {
+    k.camShake(SHAKE.DEBRIS)
+
     if (hasShield) {
       return smashDebris(debris)
     }
 
     isWrecked = true
     ship.jump(INITIAL_GRAVITY)
-    k.camShake(SHAKE.DEBRIS)
     k.destroy(debris)
   })
 

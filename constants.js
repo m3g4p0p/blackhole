@@ -23,7 +23,10 @@ export const TIME = {
 
 export const FACTOR = {
   GRAVITY: 100,
-  SCORE: 20
+  SCORE: {
+    BOOST: 20,
+    DEBRIS: 50
+  }
 }
 
 export const SPIN = {
