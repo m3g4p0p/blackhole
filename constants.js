@@ -42,7 +42,7 @@ export const DECAY = {
 }
 
 export const SHAKE = {
-  BOOST: 3,
+  BOOST: 6,
   DEBRIS: 12
 }
 
