@@ -5,6 +5,8 @@ import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
 
+export const develop = window.location.pathname.startsWith('/src')
+
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||
   window.innerHeight < SIZE.GAME.Y
@@ -15,7 +17,7 @@ export const k = window.k = window.kaboom({
   width: isMobile ? null : SIZE.GAME.X,
   height: isMobile ? null : SIZE.GAME.Y,
   plugins: [componentsPlugin, displayPlugin],
-  debug: window.location.pathname.startsWith('/src')
+  debug: develop
 })
 
 export const textLeft = isMobile ? 20 : 200
