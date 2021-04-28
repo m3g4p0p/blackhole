@@ -63,14 +63,6 @@ export default function startScene (score = 0) {
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
     ], textLeft, 200, 2)
-
-    k.mouseClick(() => {
-      if (!k.get('control').some(control =>
-        control.isClicked()
-      )) {
-        k.go('main', difficulty, true)
-      }
-    })
   }
 
   if (window.blackhole) {
