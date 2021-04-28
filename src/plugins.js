@@ -86,6 +86,26 @@ export function displayPlugin (k) {
           }
         }
       ])
+    },
+
+    addCountdown (initial, callback) {
+      const countdown = k.addInfo([
+        k.text(initial, 32),
+        k.origin('center')
+      ], 0.5, 0.5)
+
+      const handle = window.setInterval(() => {
+        const value = countdown.text - 1
+
+        if (value === 0) {
+          window.clearInterval(handle)
+          callback()
+        } else {
+          countdown.text = value
+        }
+      }, 1000)
+
+      return countdown
     }
   }
 }

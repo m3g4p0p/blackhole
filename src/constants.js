@@ -36,6 +36,11 @@ export const DECAY = {
   TAIL: 200
 }
 
+export const SHAKE = {
+  BOOST: 3,
+  DEBRIS: 12
+}
+
 export const THROTTLE = {
   FLAME: 40
 }

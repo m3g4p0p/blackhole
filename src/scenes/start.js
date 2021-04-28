@@ -1,8 +1,9 @@
 import { k, isMobile, textLeft } from '../game.js'
+import { toggleFullscreen } from '../util.js'
 
 let difficulty = 1
 let highscore = 0
-let deferredPrompt
+let deferredPrompt = null
 
 window.addEventListener('beforeinstallprompt', event => {
   event.preventDefault()
@@ -11,7 +12,7 @@ window.addEventListener('beforeinstallprompt', event => {
 
 export default function startScene (score = 0) {
   const info = k.addMessage([], textLeft, 300)
-  let promptText
+  let promptText = null
 
   function updateInfo () {
     info.setText([
@@ -30,23 +31,32 @@ export default function startScene (score = 0) {
   if (isMobile) {
     k.addInfo([
       k.text('+', 32),
-      k.origin('topright')
+      k.origin('topright'),
+      'control'
     ], -20, 20).clicks(() => {
       setDificulty(difficulty + 1)
     })
 
     k.addInfo([
       k.text('-', 32),
-      k.origin('topleft')
+      k.origin('topleft'),
+      'control'
     ], 20, 20).clicks(() => {
       setDificulty(difficulty - 1)
     })
 
     k.addInfo([
       k.text('START', 32),
-      k.origin('top')
+      k.origin('top'),
+      'control'
     ], 0.5, 20).clicks(() => {
-      k.go('main', difficulty, true)
+      k.addCountdown(3, () => {
+        k.go('main', difficulty, true)
+      })
+
+      toggleFullscreen(true)
+      k.destroy(info)
+      k.destroyAll('control')
     })
   } else {
     k.addMessage([
@@ -75,7 +85,8 @@ export default function startScene (score = 0) {
 
     promptText = k.addInfo([
       k.text('install', 16),
-      k.origin('bot')
+      k.origin('bot'),
+      'control'
     ], 0.5, -20)
 
     promptText.clicks(() => {

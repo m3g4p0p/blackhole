@@ -15,6 +15,15 @@ export function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
 
-export function hideAddressBar () {
-  window.scrollTo(0, 1)
+export function toggleFullscreen (fullscreen) {
+  if (!fullscreen) {
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(console.error)
+    }
+
+    return
+  }
+
+  const canvas = document.querySelector('canvas')
+  canvas.requestFullscreen().catch(console.error)
 }

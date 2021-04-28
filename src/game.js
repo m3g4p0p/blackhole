@@ -1,7 +1,6 @@
 import './vendor/kaboom.js'
 import { SIZE } from './constants.js'
 import { componentsPlugin, displayPlugin } from './plugins.js'
-import { hideAddressBar } from './util.js'
 import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
@@ -23,13 +22,15 @@ export const k = window.k = window.kaboom({
 
 export const textLeft = isMobile ? 20 : 200
 
+k.loadSound('soundtrack', 'media/soundtrack.mp3')
+k.loadSound('gameover', 'media/gameover.mp3')
+
 k.scene('start', startScene)
 k.scene('main', mainScene)
 k.scene('death', deathScene)
 k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
-window.addEventListener('load', hideAddressBar)
 
 if ('serviceWorker' in navigator && isSecure) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
