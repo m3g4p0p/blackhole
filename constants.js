@@ -17,7 +17,8 @@ export const SIZE = {
 
 export const TIME = {
   BOOST: 5,
-  DEBRIS: 3
+  DEBRIS: 3,
+  GOD: 4
 }
 
 export const FACTOR = {
@@ -34,6 +35,11 @@ export const DECAY = {
   FLAME: 1000,
   FIRE: 500,
   TAIL: 200
+}
+
+export const SHAKE = {
+  BOOST: 3,
+  DEBRIS: 12
 }
 
 export const THROTTLE = {

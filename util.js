@@ -17,7 +17,11 @@ export function toggleMouseClass (value) {
 
 export function toggleFullscreen (fullscreen) {
   if (!fullscreen) {
-    return document.exitFullscreen().catch(console.error)
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(console.error)
+    }
+
+    return
   }
 
   const canvas = document.querySelector('canvas')

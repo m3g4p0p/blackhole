@@ -5,8 +5,6 @@ import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
 
-export const isSecure = window.location.protocol === 'https:'
-
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||
   window.innerHeight < SIZE.GAME.Y
@@ -22,6 +20,9 @@ export const k = window.k = window.kaboom({
 
 export const textLeft = isMobile ? 20 : 200
 
+k.loadSound('soundtrack', 'media/soundtrack.mp3')
+k.loadSound('gameover', 'media/gameover.mp3')
+
 k.scene('start', startScene)
 k.scene('main', mainScene)
 k.scene('death', deathScene)
@@ -29,6 +30,6 @@ k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
 
-if ('serviceWorker' in navigator && isSecure) {
+if ('serviceWorker' in navigator && window.blackhole) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
 }

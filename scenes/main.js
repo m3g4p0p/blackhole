@@ -5,6 +5,7 @@ import {
   JUMP_FORCE,
   DECAY,
   MOVE,
+  SHAKE,
   SIZE,
   SPIN,
   STARS,
@@ -16,7 +17,11 @@ import { k } from '../game.js'
 import { cap, rotate, toggleMouseClass } from '../util.js'
 
 export default function gameScene (difficulty, mouseControl) {
+  const music = k.play('soundtrack')
   let isWrecked = false
+  let isGod = false
+
+  music.loop()
 
   k.layers([
     'info',
@@ -118,7 +123,11 @@ export default function gameScene (difficulty, mouseControl) {
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
       k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
-      k.color(1, 1, 0),
+      k.color(
+        isGod ? 0 : 1,
+        1,
+        isGod ? 1 : 0
+      ),
       k.scale(1),
       k.layer('background'),
       k.origin('center'),
@@ -212,9 +221,15 @@ export default function gameScene (difficulty, mouseControl) {
     }
   }
 
+  function gameover () {
+    music.stop()
+    k.play('gameover')
+    k.go('death', score.value, isWrecked)
+  }
+
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
-      return k.go('death', score.value, isWrecked)
+      return gameover()
     }
 
     if (isWrecked) {
@@ -234,23 +249,36 @@ export default function gameScene (difficulty, mouseControl) {
     rotateShip()
   })
 
-  ship.on('update', console.log)
-
   ship.collides('boost', boost => {
-    k.destroy(boost)
+    isGod = true
+    ship.color.a = 0.7
+
     ship.jump(gravity.value / 2)
+    music.detune(100)
+    k.destroy(boost)
+    k.camShake(SHAKE.BOOST)
     addScore(difficulty * FACTOR.SCORE)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
+
+    k.wait(TIME.GOD, () => {
+      isGod = false
+      ship.color.a = 1
+
+      music.detune(0)
+    })
   })
 
   ship.collides('debris', debris => {
+    if (isGod) {
+      return
+    }
+
     isWrecked = true
 
     ship.jump(INITIAL_GRAVITY)
     k.destroy(debris)
+    k.camShake(SHAKE.DEBRIS)
   })
-
-  k.on('decay', console.log)
 
   k.action('star', star => {
     star.pos.y -= star.age() / gravity.value * star.color.a
@@ -262,7 +290,9 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   k.action('flame', flame => {
-    flame.color = k.rgba(1, flame.decay, 0, flame.decay)
+    const { r, b } = flame.color
+
+    flame.color = k.rgba(r, flame.decay, b, flame.decay)
     flame.scale = k.vec2(0.5 + flame.decay / 2, 1)
     flame.pos.x += flame.spin
   })

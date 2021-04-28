@@ -50,21 +50,9 @@ export default function startScene (score = 0) {
       k.origin('top'),
       'control'
     ], 0.5, 20).clicks(() => {
-      const countdown = k.addInfo([
-        k.text(3, 32),
-        k.origin('center')
-      ], 0.5, 0.5)
-
-      const handle = window.setInterval(() => {
-        const value = countdown.text - 1
-
-        if (value === -1) {
-          window.clearInterval(handle)
-          k.go('main', difficulty, true)
-        } else {
-          countdown.text = value
-        }
-      }, 1000)
+      k.addCountdown(3, () => {
+        k.go('main', difficulty, true)
+      })
 
       toggleFullscreen(true)
       k.destroy(info)
