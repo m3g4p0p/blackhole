@@ -19,7 +19,7 @@ import { cap, rotate, toggleMouseClass } from '../util.js'
 export default function gameScene (difficulty, mouseControl) {
   const music = k.play('soundtrack')
   let isWrecked = false
-  let isGod = false
+  let hasShield = false
 
   music.loop()
 
@@ -79,15 +79,6 @@ export default function gameScene (difficulty, mouseControl) {
     ship.angle = (ship.pos.x - width / 2) / -width
   }
 
-  function ignite () {
-    if (ship.pos.y < 0) {
-      return
-    }
-
-    ship.jump()
-    spawnFlame()
-  }
-
   function adjustCam () {
     const delta = Math.min(0, ship.pos.y - CAM_THRESHOLD)
     k.camPos(k.camPos().x, k.height() / 2 + delta)
@@ -124,9 +115,9 @@ export default function gameScene (difficulty, mouseControl) {
       k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
       k.color(
-        isGod ? 0 : 1,
+        hasShield ? 0 : 1,
         1,
-        isGod ? 1 : 0
+        hasShield ? 1 : 0
       ),
       k.scale(1),
       k.layer('background'),
@@ -197,6 +188,34 @@ export default function gameScene (difficulty, mouseControl) {
     ])
   }
 
+  function spawnShield () {
+    k.destroyAll('shield')
+
+    hasShield = true
+    music.detune(100)
+
+    const shield = k.add([
+      k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
+      k.pos(ship.pos),
+      k.color(0, 1, 1),
+      k.rotate(ship.angle),
+      k.origin('center'),
+      k.layer('background'),
+      k.decay(DECAY.SHIELD),
+      'shield'
+    ])
+
+    shield.on('destroy', () => {
+      hasShield = false
+      music.detune(0)
+    })
+  }
+
+  function smashDebris (debris) {
+    debris.color = k.rgba(1, 0.5, 0)
+    debris.direction = debris.direction * -2
+  }
+
   function followMouse () {
     const mousePos = k.mousePos()
     const width = k.width()
@@ -221,7 +240,16 @@ export default function gameScene (difficulty, mouseControl) {
     }
   }
 
-  function gameover () {
+  function ignite () {
+    if (ship.pos.y < 0) {
+      return
+    }
+
+    ship.jump()
+    spawnFlame()
+  }
+
+  function die () {
     music.stop()
     k.play('gameover')
     k.go('death', score.value, isWrecked)
@@ -229,7 +257,7 @@ export default function gameScene (difficulty, mouseControl) {
 
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
-      return gameover()
+      return die()
     }
 
     if (isWrecked) {
@@ -250,32 +278,26 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   ship.collides('boost', boost => {
-    isGod = true
-    ship.color.a = 0.7
     ship.jump(gravity.value / 2)
-    music.detune(100)
     k.destroy(boost)
     k.camShake(SHAKE.BOOST)
     addScore(difficulty * FACTOR.SCORE)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
 
-    k.wait(TIME.GOD, () => {
-      isGod = false
-      ship.color.a = 1
-
-      music.detune(0)
-    })
+    if (!isWrecked) {
+      spawnShield()
+    }
   })
 
   ship.collides('debris', debris => {
-    if (isGod) {
-      return
+    if (hasShield) {
+      return smashDebris(debris)
     }
 
     isWrecked = true
     ship.jump(INITIAL_GRAVITY)
-    k.destroy(debris)
     k.camShake(SHAKE.DEBRIS)
+    k.destroy(debris)
   })
 
   k.action('star', star => {
@@ -329,6 +351,12 @@ export default function gameScene (difficulty, mouseControl) {
     )
 
     spawnTail(debris)
+  })
+
+  k.action('shield', shield => {
+    shield.pos = ship.pos
+    shield.angle = ship.angle
+    shield.color.a = shield.decay
   })
 
   k.gravity(INITIAL_GRAVITY)

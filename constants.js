@@ -8,6 +8,7 @@ export const SIZE = {
   SHIP: { X: 20, Y: 40 },
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },
+  SHIELD: { X: 25, Y: 45 },
   STAR: { X: 5, Y: 5 },
   DEBRIS: {
     MIN: { X: 10, Y: 10 },
@@ -17,8 +18,7 @@ export const SIZE = {
 
 export const TIME = {
   BOOST: 5,
-  DEBRIS: 3,
-  GOD: 4
+  DEBRIS: 3
 }
 
 export const FACTOR = {
@@ -34,6 +34,7 @@ export const SPIN = {
 export const DECAY = {
   FLAME: 1000,
   FIRE: 500,
+  SHIELD: 4000,
   TAIL: 200
 }
 

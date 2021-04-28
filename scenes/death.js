@@ -1,5 +1,5 @@
 import { k, textLeft } from '../game.js'
-import { toggleFullscreen, toggleMouseClass } from '../util.js'
+import { toggleMouseClass } from '../util.js'
 
 export default function deathScene (score, gotWrecked) {
   k.addMessage([
@@ -15,6 +15,5 @@ export default function deathScene (score, gotWrecked) {
   ], textLeft, 200, 2)
 
   k.wait(3, () => k.go('start', score))
-  toggleFullscreen(false)
   toggleMouseClass(false)
 }

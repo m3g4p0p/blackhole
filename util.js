@@ -1,4 +1,4 @@
-import { k } from './game.js'
+import { k, develop } from './game.js'
 
 export function cap (value, absMax) {
   return Math.max(absMax, Math.abs(value)) * Math.sign(value)
@@ -15,12 +15,8 @@ export function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
 
-export function toggleFullscreen (fullscreen) {
-  if (!fullscreen) {
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(console.error)
-    }
-
+export function requestFullscreen () {
+  if (develop || document.fullscreenElement) {
     return
   }
 
