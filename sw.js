@@ -1,22 +1,10 @@
 /* eslint-disable no-undef */
-const cacheName = '0.1.15'
+const cacheName = '0.1.16'
 const urlsToCache = [
-  '.',
-  './style.css',
-  './about.html',
-  './scenes/start.js',
-  './scenes/death.js',
-  './scenes/main.js',
-  './vendor/kaboom.js',
-  './constants.js',
-  './util.js',
-  './plugins.js',
-  './index.html',
-  './icons/launcher-icon.png',
-  './icons/favicon.ico',
   './media/gameover.mp3',
   './media/soundtrack.mp3',
-  './game.js'
+  './icons/launcher-icon.png',
+  './icons/favicon.ico'
 ]
 /* eslint-enable no-undef */
 
