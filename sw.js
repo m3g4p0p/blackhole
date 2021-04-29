@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const cacheName = '0.1.18'
+const cacheName = '0.1.19'
 const urlsToCache = [
   '.',
   './style.css',
@@ -14,6 +14,7 @@ const urlsToCache = [
   './index.html',
   './icons/launcher-icon.png',
   './icons/favicon.ico',
+  './media/booster.mp3',
   './media/gameover.mp3',
   './media/soundtrack.mp3',
   './game.js'
