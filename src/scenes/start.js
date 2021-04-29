@@ -23,7 +23,7 @@ function initInstallButton () {
     }
 
     promptText = k.addInfo([
-      k.text('install', 16),
+      k.text('install'),
       k.origin('bot'),
       'control'
     ], 0.5, -20)

@@ -61,51 +61,51 @@ export function componentsPlugin (k) {
 }
 
 export function displayPlugin (k) {
-  return {
-    addInfo (components, x, y, s = 1) {
-      return k.add([
-        k.pos(
-          calcPos(x, k.width()),
-          calcPos(y, k.height())
-        ),
-        k.color(s, s, s),
-        k.layer('info'),
-        ...components
-      ])
-    },
-
-    addMessage (lines, x, y, spacing) {
-      return k.add([
-        k.text(join(lines, spacing), null, {
-          width: k.width() - 2 * x
-        }),
-        k.pos(x, y),
-        {
-          setText (lines) {
-            this.text = join(lines, spacing)
-          }
-        }
-      ])
-    },
-
-    addCountdown (initial, callback) {
-      const countdown = k.addInfo([
-        k.text(initial, 32),
-        k.origin('center')
-      ], 0.5, 0.5)
-
-      const handle = window.setInterval(() => {
-        const value = countdown.text - 1
-
-        if (value === 0) {
-          window.clearInterval(handle)
-          callback()
-        } else {
-          countdown.text = value
-        }
-      }, 1000)
-
-      return countdown
-    }
+  function addInfo (components, x, y, s = 1) {
+    return k.add([
+      k.pos(
+        calcPos(x, k.width()),
+        calcPos(y, k.height())
+      ),
+      k.color(s, s, s),
+      k.layer('info'),
+      ...components
+    ])
   }
+
+  function addMessage (lines, x, y, spacing) {
+    return k.add([
+      k.text(join(lines, spacing), null, {
+        width: k.width() - 2 * x
+      }),
+      k.pos(x, y),
+      {
+        setText (lines) {
+          this.text = join(lines, spacing)
+        }
+      }
+    ])
+  }
+
+  function addCountdown (initial, callback) {
+    const countdown = k.addInfo([
+      k.text(initial, 32),
+      k.origin('center')
+    ], 0.5, 0.5)
+
+    const handle = window.setInterval(() => {
+      const value = countdown.text - 1
+
+      if (value === 0) {
+        window.clearInterval(handle)
+        callback()
+      } else {
+        countdown.text = value
+      }
+    }, 1000)
+
+    return countdown
+  }
+
+  return { addInfo, addMessage, addCountdown }
 }

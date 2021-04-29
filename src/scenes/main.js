@@ -4,6 +4,7 @@ import {
   INITIAL_GRAVITY,
   JUMP_FORCE,
   DECAY,
+  DETUNE,
   MOVE,
   SHAKE,
   SIZE,
@@ -192,13 +193,14 @@ export default function gameScene (difficulty, mouseControl) {
     k.destroyAll('shield')
 
     hasShield = true
-    music.detune(100)
+    music.detune(DETUNE)
 
     const shield = k.add([
       k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
       k.pos(ship.pos),
       k.color(0, 1, 1),
       k.rotate(ship.angle),
+      k.scale(1),
       k.origin('center'),
       k.layer('background'),
       k.decay(DECAY.SHIELD),
@@ -282,6 +284,7 @@ export default function gameScene (difficulty, mouseControl) {
     ship.jump(gravity.value / 2)
     k.destroy(boost)
     k.camShake(SHAKE.BOOST)
+    k.play('booster')
     addScore(difficulty * FACTOR.SCORE.BOOST)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
 
@@ -359,6 +362,8 @@ export default function gameScene (difficulty, mouseControl) {
     shield.pos = ship.pos
     shield.angle = ship.angle
     shield.color.a = shield.decay
+    shield.scale = 1.2 - shield.decay / 5
+    music.detune(DETUNE * shield.decay)
   })
 
   k.gravity(INITIAL_GRAVITY)
