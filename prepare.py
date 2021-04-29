@@ -1,3 +1,4 @@
+import argparse
 import functools
 import json
 import re
@@ -23,18 +24,37 @@ def modify(filename, replacements):
         ))
 
 
-find_command = ['find', 'src', '-type', 'f']
+def parse_args():
+    parser = argparse.ArgumentParser()
 
-for exclude in ['sw.js', '*.json']:
-    find_command.extend(['-not', '-name', exclude])
+    parser.add_argument('dirs', nargs='*', default=['src'])
+    parser.add_argument('--exclude', nargs='*', default=[])
+    parser.add_argument('--add-root', action='store_true')
 
-files = subprocess.run(find_command, capture_output=True)
+    return parser.parse_args()
 
-file_list = ['.'] + re.sub('^src', '.', files.stdout.decode(
-    'utf-8').strip(), flags=re.MULTILINE).split('\n')
+
+def find_files():
+    args = parse_args()
+    find_command = ['find', *args.dirs, '-type', 'f']
+
+    for exclude in args.exclude:
+        find_command.extend(['-not', '-name', exclude])
+
+    files = subprocess.run(find_command, capture_output=True)
+
+    file_list = re.sub('^src', '.', files.stdout.decode(
+        'utf-8').strip(), flags=re.MULTILINE).split('\n')
+
+    if args.add_root:
+        file_list.insert(0, '.')
+
+    return file_list
+
 
 shutil.rmtree('dist', ignore_errors=True)
 shutil.copytree('src', 'dist')
+file_list = find_files()
 
 with open('package.json') as package_json:
     version = json.load(package_json)['version']

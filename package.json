@@ -1,8 +1,10 @@
 {
   "name": "blackhole",
-  "version": "0.1.15",
+  "version": "0.1.18",
   "scripts": {
-    "deploy": "yarn version --patch --no-git-tag-version && .venv/bin/python deploy.py && gh-pages -d dist",
+    "prepare:prod": ".venv/bin/python prepare.py --exclude 'sw.js' '*.json' --add-root",
+    "prepare:dev": ".venv/bin/python prepare.py src/media src/icons",
+    "deploy": "yarn version --patch --no-git-tag-version && yarn prepare:prod && gh-pages -d dist",
     "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
   },
   "standard": {
