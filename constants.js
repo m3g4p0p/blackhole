@@ -37,6 +37,7 @@ export const SPIN = {
 export const DECAY = {
   FLAME: 1000,
   FIRE: 500,
+  SCORE: 500,
   SHIELD: 4000,
   TAIL: 200
 }
