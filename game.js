@@ -25,6 +25,7 @@ export const textLeft = isMobile ? 20 : 200
 k.loadSound('soundtrack', 'media/soundtrack.mp3')
 k.loadSound('gameover', 'media/gameover.mp3')
 k.loadSound('booster', 'media/booster.mp3')
+k.loadSound('crash', 'media/crash.mp3')
 
 k.scene('start', startScene)
 k.scene('main', mainScene)
