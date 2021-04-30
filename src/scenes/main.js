@@ -313,6 +313,10 @@ export default function gameScene (difficulty, mouseControl) {
   ship.collides('debris', debris => {
     k.camShake(SHAKE.DEBRIS)
 
+    k.play('crash', {
+      volume: hasShield ? 1 : 2
+    })
+
     if (hasShield) {
       return smashDebris(debris)
     }
