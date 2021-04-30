@@ -1,10 +1,10 @@
 import {
   CAM_THRESHOLD,
+  DECAY,
+  DETUNE,
   FACTOR,
   INITIAL_GRAVITY,
   JUMP_FORCE,
-  DECAY,
-  DETUNE,
   MOVE,
   SHAKE,
   SIZE,
@@ -212,13 +212,11 @@ export default function gameScene (difficulty, mouseControl) {
 
     const shield = k.add([
       k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
-      k.pos(ship.pos),
       k.color(0, 1, 1),
       k.scale(1),
-      k.rotate(ship.angle),
-      k.origin('center'),
       k.layer('background'),
       k.decay(DECAY.SHIELD),
+      k.sync(ship),
       'shield',
       'fading'
     ])
@@ -379,8 +377,6 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   k.action('shield', shield => {
-    shield.pos = ship.pos
-    shield.angle = ship.angle
     music.detune(DETUNE * shield.decay)
   })
 

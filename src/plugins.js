@@ -57,7 +57,26 @@ export function componentsPlugin (k) {
     }
   }
 
-  return { age, decay, delta }
+  function sync (object) {
+    return {
+      add () {
+        this.use(k.pos(object.pos))
+        this.use(k.rotate(object.angle))
+        this.use(k.origin(object.origin))
+
+        object.on('destroy', () => {
+          k.destroy(this)
+        })
+      },
+
+      update () {
+        this.pos = object.pos
+        this.angle = object.angle
+      }
+    }
+  }
+
+  return { age, decay, delta, sync }
 }
 
 export function displayPlugin (k) {
