@@ -56,9 +56,13 @@ export default function gameScene (difficulty, mouseControl) {
     k.delta()
   ])
 
-  function addScore (value) {
+  function addScore (value, spawn) {
     score.value += value
-    score.text = score.value
+    score.text = score.value + value
+
+    if (spawn) {
+      spawnScore(value)
+    }
   }
 
   function addGravity (value) {
@@ -83,6 +87,18 @@ export default function gameScene (difficulty, mouseControl) {
   function adjustCam () {
     const delta = Math.min(0, ship.pos.y - CAM_THRESHOLD)
     k.camPos(k.camPos().x, k.height() / 2 + delta)
+  }
+
+  function spawnScore (value) {
+    k.add([
+      k.text(value, 16),
+      k.color(1, 1, 0),
+      k.scale(1),
+      k.decay(DECAY.SCORE),
+      k.pos(ship.pos),
+      k.origin('center'),
+      'fading'
+    ])
   }
 
   function spawnBoost () {
@@ -199,12 +215,13 @@ export default function gameScene (difficulty, mouseControl) {
       k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
       k.pos(ship.pos),
       k.color(0, 1, 1),
-      k.rotate(ship.angle),
       k.scale(1),
+      k.rotate(ship.angle),
       k.origin('center'),
       k.layer('background'),
       k.decay(DECAY.SHIELD),
-      'shield'
+      'shield',
+      'fading'
     ])
 
     shield.on('destroy', () => {
@@ -216,7 +233,7 @@ export default function gameScene (difficulty, mouseControl) {
   function smashDebris (debris) {
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
-    addScore(difficulty * FACTOR.SCORE.DEBRIS)
+    addScore(difficulty * FACTOR.SCORE.DEBRIS, true)
   }
 
   function followMouse () {
@@ -285,7 +302,7 @@ export default function gameScene (difficulty, mouseControl) {
     k.destroy(boost)
     k.camShake(SHAKE.BOOST)
     k.play('booster')
-    addScore(difficulty * FACTOR.SCORE.BOOST)
+    addScore(difficulty * FACTOR.SCORE.BOOST, true)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
 
     if (!isWrecked) {
@@ -361,9 +378,12 @@ export default function gameScene (difficulty, mouseControl) {
   k.action('shield', shield => {
     shield.pos = ship.pos
     shield.angle = ship.angle
-    shield.color.a = shield.decay
-    shield.scale = 1.2 - shield.decay / 5
     music.detune(DETUNE * shield.decay)
+  })
+
+  k.action('fading', fading => {
+    fading.color.a = fading.decay
+    fading.scale = 1.2 - fading.decay / 5
   })
 
   k.gravity(INITIAL_GRAVITY)
