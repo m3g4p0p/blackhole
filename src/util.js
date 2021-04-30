@@ -1,6 +1,6 @@
 import { k, develop } from './game.js'
 
-export function cap (value, absMax) {
+export function capAbs (value, absMax) {
   return Math.max(absMax, Math.abs(value)) * Math.sign(value)
 }
 
