@@ -1,6 +1,6 @@
 {
   "name": "blackhole",
-  "version": "0.1.21",
+  "version": "0.1.23",
   "scripts": {
     "prepare:prod": ".venv/bin/python prepare.py --exclude 'sw.js' '*.json' --add-root",
     "prepare:dev": ".venv/bin/python prepare.py src/media src/icons",
