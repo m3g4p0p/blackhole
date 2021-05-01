@@ -5,11 +5,16 @@ import { cap, requestFullscreen, scaleArea } from '../util.js'
 let difficulty = DIFFICULTY.MIN
 let highscore = 0
 let deferredPrompt = null
+let vibrationEnabled = true
 
 window.addEventListener('beforeinstallprompt', event => {
   event.preventDefault()
   deferredPrompt = event
 })
+
+function toggleDisabled (control, disabled) {
+  control.color.a = disabled ? 0.5 : 1
+}
 
 function initInstallButton () {
   let promptText = null
@@ -58,14 +63,36 @@ function initInstructions () {
   })
 }
 
+function initEffectControls () {
+  const sound = k.addInfo([
+    k.text('sound', 16),
+    k.origin('topleft'),
+    'control'
+  ], 20, 100)
+
+  const vibration = k.addInfo([
+    k.text('shake', 16),
+    k.origin('topright'),
+    'control'
+  ], -20, 100)
+
+  sound.clicks(() => {
+    toggleDisabled(sound, k.volume((k.volume() + 1) % 2) === 0)
+  })
+
+  vibration.clicks(() => {
+    vibrationEnabled = !vibrationEnabled
+    toggleDisabled(vibration, !vibrationEnabled)
+  })
+
+  toggleDisabled(sound, k.volume() === 0)
+  toggleDisabled(vibration, !vibrationEnabled)
+}
+
 export default function startScene (score = 0) {
-  const info = k.addMessage([], textLeft, 200)
+  const info = k.addMessage([], textLeft, 200, 1, 12)
 
   highscore = Math.max(score, highscore)
-
-  function toggleDisabled (control, disabled) {
-    control.color.a = disabled ? 0.5 : 1
-  }
 
   function updateInfo () {
     info.setText([
@@ -112,17 +139,13 @@ export default function startScene (score = 0) {
       'control'
     ], 0.5, 20).clicks(() => {
       k.addCountdown(3, () => {
-        k.go('main', difficulty, true)
+        k.go('main', difficulty, true, vibrationEnabled)
       })
 
       k.destroy(info)
       k.destroyAll('control')
       k.destroyAll('instructions')
       requestFullscreen()
-    })
-
-    k.every('control', control => {
-      control.area = scaleArea(control.area, 1.2).area
     })
   }
 
@@ -133,7 +156,7 @@ export default function startScene (score = 0) {
     ], textLeft, 300, 2)
 
     k.mouseClick(() => {
-      k.go('main', difficulty, true)
+      k.go('main', difficulty, true, false)
     })
   }
 
@@ -148,14 +171,19 @@ export default function startScene (score = 0) {
 
   if (isMobile) {
     initMobileControls()
+    initEffectControls()
     initInstallButton()
     initInstructions()
   } else {
     initDesktopControls()
   }
 
+  k.every('control', control => {
+    control.area = scaleArea(control.area, 1.2).area
+  })
+
   k.keyPress('space', () => {
-    k.go('main', difficulty, false)
+    k.go('main', difficulty, false, false)
   })
 
   k.keyPress('up', () => {

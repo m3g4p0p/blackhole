@@ -17,7 +17,11 @@ import {
 import { k } from '../game.js'
 import { capAbs, rotate, toggleMouseClass } from '../util.js'
 
-export default function gameScene (difficulty, mouseControl) {
+export default function gameScene (
+  difficulty,
+  mouseControl,
+  vibrationEnabled
+) {
   const music = k.play('soundtrack')
   let isWrecked = false
   let hasShield = false
@@ -266,6 +270,14 @@ export default function gameScene (difficulty, mouseControl) {
     spawnFlame()
   }
 
+  function shake (value) {
+    k.camShake(value)
+
+    if (vibrationEnabled) {
+      navigator.vibrate([value * 10])
+    }
+  }
+
   function die () {
     music.stop()
     k.play('gameover')
@@ -297,8 +309,8 @@ export default function gameScene (difficulty, mouseControl) {
   ship.collides('boost', boost => {
     ship.jump(gravity.value / 2)
     k.destroy(boost)
-    k.camShake(SHAKE.BOOST)
     k.play('booster')
+    shake(SHAKE.BOOST)
     addScore(difficulty * FACTOR.SCORE.BOOST, true)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
 
@@ -308,7 +320,7 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   ship.collides('debris', debris => {
-    k.camShake(SHAKE.DEBRIS)
+    shake(SHAKE.DEBRIS)
 
     k.play('crash', {
       volume: hasShield ? 1 : 2

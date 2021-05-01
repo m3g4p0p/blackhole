@@ -92,9 +92,9 @@ export function displayPlugin (k) {
     ])
   }
 
-  function addMessage (lines, x, y, spacing) {
+  function addMessage (lines, x, y, spacing, size) {
     return k.add([
-      k.text(join(lines, spacing), null, {
+      k.text(join(lines, spacing), size, {
         width: k.width() - 2 * x
       }),
       k.pos(x, y),

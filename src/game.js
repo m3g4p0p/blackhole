@@ -20,7 +20,7 @@ export const k = window.k = window.kaboom({
   debug: develop
 })
 
-export const textLeft = isMobile ? 20 : 200
+export const textLeft = isMobile ? 20 : 100
 
 k.loadSound('soundtrack', 'media/soundtrack.mp3')
 k.loadSound('gameover', 'media/gameover.mp3')
