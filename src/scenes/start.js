@@ -1,7 +1,8 @@
+import { DIFFICULTY } from '../constants.js'
 import { k, isMobile, textLeft } from '../game.js'
-import { requestFullscreen } from '../util.js'
+import { cap, requestFullscreen, scaleArea } from '../util.js'
 
-let difficulty = 1
+let difficulty = DIFFICULTY.MIN
 let highscore = 0
 let deferredPrompt = null
 
@@ -40,15 +41,27 @@ export default function startScene (score = 0) {
 
   highscore = Math.max(score, highscore)
 
+  function toggleDisabled (control, disabled) {
+    control.color.a = disabled ? 0.5 : 1
+  }
+
   function updateInfo () {
     info.setText([
       `Difficulty: ${difficulty}`,
       `Highscore: ${highscore}`
     ])
+
+    k.every('difficulty+', control => {
+      toggleDisabled(control, difficulty === DIFFICULTY.MAX)
+    })
+
+    k.every('difficulty-', control => {
+      toggleDisabled(control, difficulty === DIFFICULTY.MIN)
+    })
   }
 
   function setDifficulty (value) {
-    difficulty = Math.max(1, Math.min(10, value))
+    difficulty = cap(value, DIFFICULTY.MIN, DIFFICULTY.MAX)
     updateInfo()
   }
 
@@ -56,7 +69,8 @@ export default function startScene (score = 0) {
     k.addInfo([
       k.text('+', 32),
       k.origin('topright'),
-      'control'
+      'control',
+      'difficulty+'
     ], -20, 20).clicks(() => {
       setDifficulty(difficulty + 1)
     })
@@ -64,7 +78,8 @@ export default function startScene (score = 0) {
     k.addInfo([
       k.text('-', 32),
       k.origin('topleft'),
-      'control'
+      'control',
+      'difficulty-'
     ], 20, 20).clicks(() => {
       setDifficulty(difficulty - 1)
     })
@@ -81,6 +96,10 @@ export default function startScene (score = 0) {
       k.destroy(info)
       k.destroyAll('control')
       requestFullscreen()
+    })
+
+    k.every('control', control => {
+      control.area = scaleArea(control.area, 1.4).area
     })
   }
 
