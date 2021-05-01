@@ -37,6 +37,3 @@ document.body.classList.toggle('is-fullscreen', isMobile)
 if ('serviceWorker' in navigator && window.blackhole) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
 }
-
-k.volume(0)
-k.dbg().showArea = true

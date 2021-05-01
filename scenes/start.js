@@ -36,8 +36,30 @@ function initInstallButton () {
   })
 }
 
+function initInstructions () {
+  const instructionText = document
+    .getElementById('instructions')
+    .textContent
+    .replace(/\s+/g, ' ')
+    .trim()
+
+  const instructions = k.add([
+    k.text(instructionText),
+    k.pos(k.width(), 300),
+    'instructions'
+  ])
+
+  instructions.action(() => {
+    instructions.pos.x -= k.dt() * 100
+
+    if (instructions.pos.x < -instructions.areaWidth()) {
+      instructions.pos.x = k.width()
+    }
+  })
+}
+
 export default function startScene (score = 0) {
-  const info = k.addMessage([], textLeft, 300)
+  const info = k.addMessage([], textLeft, 200)
 
   highscore = Math.max(score, highscore)
 
@@ -95,6 +117,7 @@ export default function startScene (score = 0) {
 
       k.destroy(info)
       k.destroyAll('control')
+      k.destroyAll('instructions')
       requestFullscreen()
     })
 
@@ -107,7 +130,7 @@ export default function startScene (score = 0) {
     k.addMessage([
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
-    ], textLeft, 200, 2)
+    ], textLeft, 300, 2)
 
     k.mouseClick(() => {
       k.go('main', difficulty, true)
@@ -126,6 +149,7 @@ export default function startScene (score = 0) {
   if (isMobile) {
     initMobileControls()
     initInstallButton()
+    initInstructions()
   } else {
     initDesktopControls()
   }
