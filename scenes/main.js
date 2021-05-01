@@ -1,10 +1,10 @@
 import {
   CAM_THRESHOLD,
+  DECAY,
+  DETUNE,
   FACTOR,
   INITIAL_GRAVITY,
   JUMP_FORCE,
-  DECAY,
-  DETUNE,
   MOVE,
   SHAKE,
   SIZE,
@@ -15,7 +15,7 @@ import {
 } from '../constants.js'
 
 import { k } from '../game.js'
-import { cap, rotate, toggleMouseClass } from '../util.js'
+import { capAbs, rotate, toggleMouseClass } from '../util.js'
 
 export default function gameScene (difficulty, mouseControl) {
   const music = k.play('soundtrack')
@@ -56,11 +56,11 @@ export default function gameScene (difficulty, mouseControl) {
     k.delta()
   ])
 
-  function addScore (value, spawn) {
+  function addScore (value, extra) {
     score.value += value
-    score.text = score.value + value
+    score.text = score.value
 
-    if (spawn) {
+    if (extra) {
       spawnScore(value)
     }
   }
@@ -131,10 +131,9 @@ export default function gameScene (difficulty, mouseControl) {
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
       k.pos(ship.pos.add(offset)),
       k.rotate(ship.angle),
-      k.color(
-        hasShield ? 0 : 1,
-        1,
-        hasShield ? 1 : 0
+      k.color(...hasShield
+        ? [0, 1, 1]
+        : [1, 1, 0]
       ),
       k.scale(1),
       k.layer('background'),
@@ -213,13 +212,11 @@ export default function gameScene (difficulty, mouseControl) {
 
     const shield = k.add([
       k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
-      k.pos(ship.pos),
       k.color(0, 1, 1),
       k.scale(1),
-      k.rotate(ship.angle),
-      k.origin('center'),
       k.layer('background'),
       k.decay(DECAY.SHIELD),
+      k.sync(ship),
       'shield',
       'fading'
     ])
@@ -248,7 +245,7 @@ export default function gameScene (difficulty, mouseControl) {
       ship.pos.x > width - ship.width
     )) return
 
-    const delta = cap(k.mousePos().sub(ship.pos).x, MOVE.SHIP.X)
+    const delta = capAbs(k.mousePos().sub(ship.pos).x, MOVE.SHIP.X)
     ship.move(delta, MOVE.SHIP.Y * Math.abs(delta) / MOVE.SHIP.X)
   }
 
@@ -380,8 +377,6 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   k.action('shield', shield => {
-    shield.pos = ship.pos
-    shield.angle = ship.angle
     music.detune(DETUNE * shield.decay)
   })
 

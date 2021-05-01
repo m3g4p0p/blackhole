@@ -1,3 +1,8 @@
+export const DIFFICULTY = {
+  MIN: 1,
+  MAX: 3
+}
+
 export const MOVE = {
   SHIP: { X: 100, Y: 10 },
   DEBRIS: { X: 100, Y: 100 }
