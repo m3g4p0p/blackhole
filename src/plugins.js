@@ -80,14 +80,13 @@ export function componentsPlugin (k) {
 }
 
 export function displayPlugin (k) {
-  function addInfo (components, x, y, s = 1) {
+  function addGUI (components, x, y, s = 1) {
     return k.add([
       k.pos(
         calcPos(x, k.width()),
         calcPos(y, k.height())
       ),
       k.color(s, s, s),
-      k.layer('info'),
       ...components
     ])
   }
@@ -107,7 +106,7 @@ export function displayPlugin (k) {
   }
 
   function addCountdown (initial, callback) {
-    const countdown = k.addInfo([
+    const countdown = k.addGUI([
       k.text(initial, 32),
       k.origin('center')
     ], 0.5, 0.5)
@@ -126,5 +125,5 @@ export function displayPlugin (k) {
     return countdown
   }
 
-  return { addInfo, addMessage, addCountdown }
+  return { addGUI, addMessage, addCountdown }
 }

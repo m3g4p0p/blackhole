@@ -15,13 +15,6 @@ export function rotate (x, y, angle) {
   )
 }
 
-export function scaleArea (area, scale) {
-  return k.area(
-    area.p1.scale(scale),
-    area.p2.scale(scale)
-  )
-}
-
 export function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }

@@ -34,19 +34,22 @@ export default function gameScene (
     'game'
   ], 'game')
 
-  k.addInfo([
+  k.addGUI([
     k.text('G'),
-    k.origin('botright')
+    k.origin('botright'),
+    k.layer('info')
   ], -10, -10, 0.5)
 
-  const score = k.addInfo([
+  const score = k.addGUI([
     k.text(),
+    k.layer('info'),
     { value: 0 }
   ], 10, 10)
 
-  const gravity = k.addInfo([
+  const gravity = k.addGUI([
     k.rect(10, 0),
     k.origin('botright'),
+    k.layer('info'),
     { value: INITIAL_GRAVITY }
   ], -10, -25, 0.5)
 
