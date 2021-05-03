@@ -60,9 +60,11 @@ export function componentsPlugin (k) {
   function sync (object) {
     return {
       add () {
-        this.use(k.pos(object.pos))
-        this.use(k.rotate(object.angle))
-        this.use(k.origin(object.origin))
+        this.use([
+          k.pos(object.pos),
+          k.rotate(object.angle),
+          k.origin(object.origin)
+        ])
 
         object.on('destroy', () => {
           k.destroy(this)

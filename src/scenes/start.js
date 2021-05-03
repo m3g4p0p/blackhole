@@ -1,9 +1,9 @@
 import { DIFFICULTY } from '../constants.js'
-import { k, isMobile, padding } from '../game.js'
-import { cap, requestFullscreen } from '../util.js'
+import { k, blackhole, isMobile, padding } from '../game.js'
+import { cap, requestFullscreen, getHighscore } from '../util.js'
 
 let difficulty = DIFFICULTY.MIN
-let highscore = 0
+let highscore = getHighscore()
 let deferredPrompt = null
 let vibrationEnabled = true
 
@@ -19,7 +19,7 @@ function toggleDisabled (control, disabled) {
 function initInstallButton () {
   let promptText = null
 
-  if (!window.blackhole) {
+  if (!blackhole) {
     return
   }
 
@@ -110,6 +110,7 @@ export default function startScene (score = 0) {
   const info = k.addMessage([], padding, 200, 1, 12)
 
   highscore = Math.max(score, highscore)
+  localStorage.setItem('highscore', highscore)
 
   function updateInfo () {
     info.setText([
@@ -177,9 +178,9 @@ export default function startScene (score = 0) {
     })
   }
 
-  if (window.blackhole) {
+  if (blackhole) {
     k.addGUI([
-      k.text(window.blackhole),
+      k.text(blackhole),
       k.origin('botright')
     ], -padding, -padding).clicks(() => {
       window.location.assign('about.html')

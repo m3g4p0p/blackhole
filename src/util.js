@@ -27,3 +27,8 @@ export function requestFullscreen () {
   const canvas = document.querySelector('canvas')
   canvas.requestFullscreen().catch(console.error)
 }
+
+export function getHighscore () {
+  const highscore = localStorage.getItem('highscore')
+  return highscore ? parseInt(highscore, 10) : 0
+}

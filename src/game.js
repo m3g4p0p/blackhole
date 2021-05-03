@@ -5,6 +5,7 @@ import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
 
+export const { blackhole } = window
 export const develop = window.location.pathname.startsWith('/src')
 
 export const isMobile = (
@@ -34,6 +35,6 @@ k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
 
-if ('serviceWorker' in navigator && window.blackhole) {
+if ('serviceWorker' in navigator && blackhole) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
 }
