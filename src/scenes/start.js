@@ -91,6 +91,23 @@ function initEffectControls () {
   toggleDisabled(vibration, !vibrationEnabled)
 }
 
+function addPadding () {
+  const height = k.height()
+
+  k.add([
+    k.rect(padding, height),
+    k.pos(0, 0),
+    k.color(0, 0, 0)
+  ])
+
+  k.add([
+    k.rect(padding, height),
+    k.pos(k.width(), 0),
+    k.color(0, 0, 0),
+    k.origin('right')
+  ])
+}
+
 export default function startScene (score = 0) {
   const info = k.addMessage([], padding, 200, 1, 12)
 
@@ -200,4 +217,5 @@ export default function startScene (score = 0) {
   })
 
   updateInfo()
+  addPadding()
 }
