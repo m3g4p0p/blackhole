@@ -1,3 +1,8 @@
+export const DIFFICULTY = {
+  MIN: 1,
+  MAX: 3
+}
+
 export const MOVE = {
   SHIP: { X: 100, Y: 10 },
   DEBRIS: { X: 100, Y: 100 }
@@ -8,6 +13,7 @@ export const SIZE = {
   SHIP: { X: 20, Y: 40 },
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },
+  SHIELD: { X: 25, Y: 45 },
   STAR: { X: 5, Y: 5 },
   DEBRIS: {
     MIN: { X: 10, Y: 10 },
@@ -22,7 +28,10 @@ export const TIME = {
 
 export const FACTOR = {
   GRAVITY: 100,
-  SCORE: 20
+  SCORE: {
+    BOOST: 20,
+    DEBRIS: 50
+  }
 }
 
 export const SPIN = {
@@ -33,7 +42,14 @@ export const SPIN = {
 export const DECAY = {
   FLAME: 1000,
   FIRE: 500,
+  SCORE: 500,
+  SHIELD: 4000,
   TAIL: 200
+}
+
+export const SHAKE = {
+  BOOST: 6,
+  DEBRIS: 12
 }
 
 export const THROTTLE = {
@@ -44,3 +60,4 @@ export const INITIAL_GRAVITY = 1000
 export const STARS = 10
 export const CAM_THRESHOLD = 20
 export const JUMP_FORCE = 480
+export const DETUNE = 100
