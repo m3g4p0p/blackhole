@@ -1,20 +1,25 @@
 import { DIFFICULTY } from '../constants.js'
-import { k, isMobile, textLeft } from '../game.js'
-import { cap, requestFullscreen, scaleArea } from '../util.js'
+import { k, blackhole, isMobile, padding } from '../game.js'
+import { cap, requestFullscreen, getHighscore } from '../util.js'
 
 let difficulty = DIFFICULTY.MIN
-let highscore = 0
+let highscore = getHighscore()
 let deferredPrompt = null
+let vibrationEnabled = true
 
 window.addEventListener('beforeinstallprompt', event => {
   event.preventDefault()
   deferredPrompt = event
 })
 
+function toggleDisabled (control, disabled) {
+  control.color.a = disabled ? 0.5 : 1
+}
+
 function initInstallButton () {
   let promptText = null
 
-  if (!window.blackhole) {
+  if (!blackhole) {
     return
   }
 
@@ -23,11 +28,11 @@ function initInstallButton () {
       return
     }
 
-    promptText = k.addInfo([
+    promptText = k.addGUI([
       k.text('install'),
       k.origin('bot'),
       'control'
-    ], 0.5, -20)
+    ], 0.5, -padding)
 
     promptText.clicks(() => {
       deferredPrompt.prompt()
@@ -58,14 +63,55 @@ function initInstructions () {
   })
 }
 
+function initEffectControls () {
+  const sound = k.addGUI([
+    k.text('sound', 16),
+    k.origin('topleft'),
+    'control'
+  ], padding, 100)
+
+  const vibration = k.addGUI([
+    k.text('shake', 16),
+    k.origin('topright'),
+    'control'
+  ], -padding, 100)
+
+  sound.clicks(() => {
+    const volume = k.volume((k.volume() + 1) % 2)
+    toggleDisabled(sound, volume === 0)
+  })
+
+  vibration.clicks(() => {
+    vibrationEnabled = !vibrationEnabled
+    toggleDisabled(vibration, !vibrationEnabled)
+  })
+
+  toggleDisabled(sound, k.volume() === 0)
+  toggleDisabled(vibration, !vibrationEnabled)
+}
+
+function addPadding () {
+  const height = k.height()
+
+  k.add([
+    k.rect(padding, height),
+    k.pos(0, 0),
+    k.color(0, 0, 0)
+  ])
+
+  k.add([
+    k.rect(padding, height),
+    k.pos(k.width(), 0),
+    k.color(0, 0, 0),
+    k.origin('right')
+  ])
+}
+
 export default function startScene (score = 0) {
-  const info = k.addMessage([], textLeft, 200)
+  const info = k.addMessage([], padding, 200, 1, 12)
 
   highscore = Math.max(score, highscore)
-
-  function toggleDisabled (control, disabled) {
-    control.color.a = disabled ? 0.5 : 1
-  }
+  localStorage.setItem('highscore', highscore)
 
   function updateInfo () {
     info.setText([
@@ -88,31 +134,31 @@ export default function startScene (score = 0) {
   }
 
   function initMobileControls () {
-    k.addInfo([
+    k.addGUI([
       k.text('+', 32),
       k.origin('topright'),
       'control',
       'difficulty+'
-    ], -20, 20).clicks(() => {
+    ], -padding, padding).clicks(() => {
       setDifficulty(difficulty + 1)
     })
 
-    k.addInfo([
+    k.addGUI([
       k.text('-', 32),
       k.origin('topleft'),
       'control',
       'difficulty-'
-    ], 20, 20).clicks(() => {
+    ], padding, padding).clicks(() => {
       setDifficulty(difficulty - 1)
     })
 
-    k.addInfo([
+    k.addGUI([
       k.text('START', 32),
       k.origin('top'),
       'control'
-    ], 0.5, 20).clicks(() => {
+    ], 0.5, padding).clicks(() => {
       k.addCountdown(3, () => {
-        k.go('main', difficulty, true)
+        k.go('main', difficulty, true, vibrationEnabled)
       })
 
       k.destroy(info)
@@ -120,28 +166,24 @@ export default function startScene (score = 0) {
       k.destroyAll('instructions')
       requestFullscreen()
     })
-
-    k.every('control', control => {
-      control.area = scaleArea(control.area, 1.2).area
-    })
   }
 
   function initDesktopControls () {
     k.addMessage([
       'Press SPACE to start falling!',
       'Use UP and DOWN to adjust the difficulty.'
-    ], textLeft, 300, 2)
+    ], padding, 300, 2)
 
     k.mouseClick(() => {
-      k.go('main', difficulty, true)
+      k.go('main', difficulty, true, false)
     })
   }
 
-  if (window.blackhole) {
-    k.addInfo([
-      k.text(window.blackhole),
+  if (blackhole) {
+    k.addGUI([
+      k.text(blackhole),
       k.origin('botright')
-    ], -20, -20).clicks(() => {
+    ], -padding, -padding).clicks(() => {
       window.location.assign('about.html')
     })
   }
@@ -150,12 +192,18 @@ export default function startScene (score = 0) {
     initMobileControls()
     initInstallButton()
     initInstructions()
+    initEffectControls()
   } else {
     initDesktopControls()
   }
 
+  k.every('control', control => {
+    const height = k.vec2(0, control.areaHeight())
+    control.area.p2 = control.area.p2.add(height)
+  })
+
   k.keyPress('space', () => {
-    k.go('main', difficulty, false)
+    k.go('main', difficulty, false, false)
   })
 
   k.keyPress('up', () => {
@@ -169,4 +217,5 @@ export default function startScene (score = 0) {
   })
 
   updateInfo()
+  addPadding()
 }

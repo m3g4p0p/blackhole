@@ -6,6 +6,7 @@ import {
   INITIAL_GRAVITY,
   JUMP_FORCE,
   MOVE,
+  SCORE,
   SHAKE,
   SIZE,
   SPIN,
@@ -15,9 +16,13 @@ import {
 } from '../constants.js'
 
 import { k } from '../game.js'
-import { capAbs, rotate, toggleMouseClass } from '../util.js'
+import { capAbs, toggleMouseClass } from '../util.js'
 
-export default function gameScene (difficulty, mouseControl) {
+export default function gameScene (
+  difficulty,
+  mouseControl,
+  vibrationEnabled
+) {
   const music = k.play('soundtrack')
   let isWrecked = false
   let hasShield = false
@@ -30,19 +35,22 @@ export default function gameScene (difficulty, mouseControl) {
     'game'
   ], 'game')
 
-  k.addInfo([
+  k.addGUI([
     k.text('G'),
-    k.origin('botright')
+    k.origin('botright'),
+    k.layer('info')
   ], -10, -10, 0.5)
 
-  const score = k.addInfo([
+  const score = k.addGUI([
     k.text(),
+    k.layer('info'),
     { value: 0 }
   ], 10, 10)
 
-  const gravity = k.addInfo([
+  const gravity = k.addGUI([
     k.rect(10, 0),
     k.origin('botright'),
+    k.layer('info'),
     { value: INITIAL_GRAVITY }
   ], -10, -25, 0.5)
 
@@ -57,12 +65,13 @@ export default function gameScene (difficulty, mouseControl) {
   ])
 
   function addScore (value, extra) {
-    score.value += value
-    score.text = score.value
-
     if (extra) {
+      value *= difficulty
       spawnScore(value)
     }
+
+    score.value += value
+    score.text = score.value
   }
 
   function addGravity (value) {
@@ -101,6 +110,22 @@ export default function gameScene (difficulty, mouseControl) {
     ])
   }
 
+  function spawnSpark (boost) {
+    const { r, g, b } = boost.color
+    const center = boost.pos
+
+    k.add([
+      k.rect(boost.width / 2, boost.height / 2),
+      k.color(r, g, b),
+      k.pos(center),
+      k.rotate(boost.angle),
+      k.origin(boost.origin),
+      k.decay(TIME.BOOST * 1000),
+      'spark',
+      { center }
+    ])
+  }
+
   function spawnBoost () {
     const boost = k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
@@ -121,11 +146,13 @@ export default function gameScene (difficulty, mouseControl) {
     k.wait(TIME.BOOST, () => {
       k.destroy(boost)
     })
+
+    spawnSpark(boost)
   }
 
   function spawnFlame () {
-    const offset = rotate(0, ship.height / 2, -ship.angle)
-    const spin = rotate(0, SIZE.FLAME.Y, -ship.angle).x
+    const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
+    const spin = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
 
     k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
@@ -230,7 +257,7 @@ export default function gameScene (difficulty, mouseControl) {
   function smashDebris (debris) {
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
-    addScore(difficulty * FACTOR.SCORE.DEBRIS, true)
+    addScore(SCORE.DEBRIS, true)
   }
 
   function followMouse () {
@@ -266,6 +293,14 @@ export default function gameScene (difficulty, mouseControl) {
     spawnFlame()
   }
 
+  function shake (value) {
+    k.camShake(value)
+
+    if (vibrationEnabled) {
+      navigator.vibrate([value * 10])
+    }
+  }
+
   function die () {
     music.stop()
     k.play('gameover')
@@ -295,12 +330,14 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   ship.collides('boost', boost => {
-    ship.jump(gravity.value / 2)
+    const factor = difficulty / 2
+
+    ship.jump(gravity.value * factor)
     k.destroy(boost)
-    k.camShake(SHAKE.BOOST)
     k.play('booster')
-    addScore(difficulty * FACTOR.SCORE.BOOST, true)
-    addGravity((INITIAL_GRAVITY - gravity.value) / 2)
+    shake(SHAKE.BOOST)
+    addScore(SCORE.BOOST, true)
+    addGravity((INITIAL_GRAVITY - gravity.value) * factor)
 
     if (!isWrecked) {
       spawnShield()
@@ -308,7 +345,7 @@ export default function gameScene (difficulty, mouseControl) {
   })
 
   ship.collides('debris', debris => {
-    k.camShake(SHAKE.DEBRIS)
+    shake(SHAKE.DEBRIS)
 
     k.play('crash', {
       volume: hasShield ? 1 : 2
@@ -354,6 +391,16 @@ export default function gameScene (difficulty, mouseControl) {
 
   k.action('boost', boost => {
     addGravitySpin(boost, SPIN.BOOST)
+  })
+
+  k.action('spark', spark => {
+    addGravitySpin(spark, SPIN.SPARK)
+    spark.color.a = spark.decay
+
+    spark.pos = spark.center.add(k
+      .rotateVec(SIZE.BOOST.X, SIZE.BOOST.Y, spark.angle)
+      .scale(2 - spark.decay * 1.5)
+    )
   })
 
   k.action('debris', debris => {
