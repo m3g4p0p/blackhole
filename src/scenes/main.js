@@ -80,10 +80,6 @@ export default function gameScene (
     k.gravity(gravity.value)
   }
 
-  function addGravitySpin (object, scale) {
-    object.angle += k.dt() * gravity.value / scale
-  }
-
   function unlessWrecked (fn) {
     return (...args) => !isWrecked && fn(...args)
   }
@@ -110,6 +106,25 @@ export default function gameScene (
     ])
   }
 
+  function spawnSpark (boost) {
+    const { r, g, b } = boost.color
+    const center = boost.pos
+
+    const spark = k.add([
+      k.rect(boost.width / 2, boost.height / 2),
+      k.color(r, g, b),
+      k.pos(center),
+      k.spin(SPIN.SPARK),
+      k.decay(TIME.BOOST * 1000),
+      'spark',
+      { center }
+    ])
+
+    boost.on('destroy', () => {
+      k.destroy(spark)
+    })
+  }
+
   function spawnBoost () {
     const boost = k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
@@ -118,8 +133,7 @@ export default function gameScene (
         k.rand(0, k.height() - SIZE.BOOST.Y)
       ),
       k.color(0, 1, 0.5),
-      k.rotate(0),
-      k.origin('center'),
+      k.spin(SPIN.BOOST),
       'boost'
     ])
 
@@ -134,7 +148,7 @@ export default function gameScene (
 
   function spawnFlame () {
     const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
-    const spin = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
+    const direction = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
 
     k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
@@ -149,7 +163,7 @@ export default function gameScene (
       k.origin('center'),
       k.decay(DECAY.FLAME),
       'flame',
-      { spin }
+      { direction }
     ])
   }
 
@@ -197,17 +211,16 @@ export default function gameScene (
   function spawnDebris () {
     const posX = k.rand(0, k.width())
     const direction = k.rand(0, Math.sign(k.width() / 2 - posX))
+    const width = k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X)
+    const height = k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
+    const spin = SPIN.DEBRIS * Math.sign(width - height)
 
     k.add([
-      k.rect(
-        k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X),
-        k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
-      ),
+      k.rect(width, height),
       k.pos(posX, -k.height()),
       k.color(1, 1, 1),
-      k.rotate(0),
-      k.origin('center'),
       k.body(),
+      k.spin(spin),
       'debris',
       { direction }
     ])
@@ -216,10 +229,7 @@ export default function gameScene (
   function spawnShield () {
     k.destroyAll('shield')
 
-    hasShield = true
-    music.detune(DETUNE)
-
-    const shield = k.add([
+    k.add([
       k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
       k.color(0, 1, 1),
       k.scale(1),
@@ -229,11 +239,6 @@ export default function gameScene (
       'shield',
       'fading'
     ])
-
-    shield.on('destroy', () => {
-      hasShield = false
-      music.detune(0)
-    })
   }
 
   function smashDebris (debris) {
@@ -295,7 +300,6 @@ export default function gameScene (
     }
 
     if (isWrecked) {
-      addGravitySpin(ship, SPIN.DEBRIS)
       return spawnFire()
     }
 
@@ -312,12 +316,14 @@ export default function gameScene (
   })
 
   ship.collides('boost', boost => {
-    ship.jump(gravity.value / 2)
+    const factor = difficulty / 2
+
+    ship.jump(gravity.value * factor)
     k.destroy(boost)
     k.play('booster')
     shake(SHAKE.BOOST)
     addScore(SCORE.BOOST, true)
-    addGravity((INITIAL_GRAVITY - gravity.value) / 2)
+    addGravity((INITIAL_GRAVITY - gravity.value) * factor)
 
     if (!isWrecked) {
       spawnShield()
@@ -337,6 +343,7 @@ export default function gameScene (
 
     isWrecked = true
     ship.jump(INITIAL_GRAVITY)
+    ship.use(k.spin(SPIN.DEBRIS))
     k.destroy(debris)
   })
 
@@ -354,7 +361,7 @@ export default function gameScene (
 
     flame.color = k.rgba(r, flame.decay, b, flame.decay)
     flame.scale = k.vec2(0.5 + flame.decay / 2, 1)
-    flame.pos.x += flame.spin
+    flame.pos.x += flame.direction
   })
 
   k.action('fire', fire => {
@@ -369,18 +376,19 @@ export default function gameScene (
     tail.scale = k.vec2(tail.decay, tail.decay)
   })
 
-  k.action('boost', boost => {
-    addGravitySpin(boost, SPIN.BOOST)
+  k.action('spark', spark => {
+    spark.color.a = spark.decay
+
+    spark.pos = spark.center.add(k
+      .rotateVec(SIZE.BOOST.X, SIZE.BOOST.Y, spark.angle)
+      .scale(2 - spark.decay * 1.5)
+    )
   })
 
   k.action('debris', debris => {
     if (debris.pos.y > k.height() + debris.height) {
       return k.destroy(debris)
     }
-
-    addGravitySpin(debris, SPIN.DEBRIS * Math.sign(
-      debris.width - debris.height
-    ))
 
     debris.move(
       debris.direction *
@@ -402,6 +410,17 @@ export default function gameScene (
     fading.scale = 1.2 - fading.decay / 5
   })
 
+  k.on('add', 'shield', () => {
+    hasShield = true
+    music.detune(DETUNE)
+  })
+
+  k.on('destroy', 'shield', () => {
+    hasShield = false
+    music.detune(0)
+  })
+
+  k.on('add', 'boost', spawnSpark)
   k.gravity(INITIAL_GRAVITY)
   k.camIgnore(['info'])
 

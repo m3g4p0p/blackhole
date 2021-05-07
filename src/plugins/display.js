@@ -38,20 +38,19 @@ export default function displayPlugin (k) {
 
   function addCountdown (initial, callback) {
     const countdown = k.addGUI([
-      k.text(initial, 32),
+      k.text(initial + 1, 32),
       k.origin('center')
     ], 0.5, 0.5)
 
-    const handle = window.setInterval(() => {
+    k.loop(1, () => {
       const value = countdown.text - 1
 
       if (value === 0) {
-        window.clearInterval(handle)
         callback()
       } else {
         countdown.text = value
       }
-    }, 1000)
+    })
 
     return countdown
   }

@@ -32,7 +32,8 @@ export const FACTOR = {
 
 export const SPIN = {
   BOOST: -1000,
-  DEBRIS: 500
+  DEBRIS: 500,
+  SPARK: -200
 }
 
 export const DECAY = {
