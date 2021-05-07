@@ -16,7 +16,7 @@ import {
 } from '../constants.js'
 
 import { k } from '../game.js'
-import { capAbs, rotate, toggleMouseClass } from '../util.js'
+import { capAbs, toggleMouseClass } from '../util.js'
 
 export default function gameScene (
   difficulty,
@@ -133,8 +133,8 @@ export default function gameScene (
   }
 
   function spawnFlame () {
-    const offset = rotate(0, ship.height / 2, -ship.angle)
-    const spin = rotate(0, SIZE.FLAME.Y, -ship.angle).x
+    const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
+    const spin = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
 
     k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),

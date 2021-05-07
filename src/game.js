@@ -1,9 +1,11 @@
-import './vendor/kaboom.js'
-import { SIZE } from './constants.js'
-import { componentsPlugin, displayPlugin } from './plugins.js'
+import kaboom from './vendor/kaboom.mjs'
+import componentsPlugin from './plugins/components.js'
+import displayPlugin from './plugins/display.js'
+import mathPlugin from './plugins/math.js'
 import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
+import { SIZE } from './constants.js'
 
 export const { blackhole } = window
 export const develop = window.location.pathname.startsWith('/src')
@@ -13,11 +15,11 @@ export const isMobile = (
   window.innerHeight < SIZE.GAME.Y
 )
 
-export const k = window.k = window.kaboom({
+export const k = window.k = kaboom({
   fullscreen: isMobile,
   width: isMobile ? null : SIZE.GAME.X,
   height: isMobile ? null : SIZE.GAME.Y,
-  plugins: [componentsPlugin, displayPlugin],
+  plugins: [componentsPlugin, displayPlugin, mathPlugin],
   debug: develop
 })
 
