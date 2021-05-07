@@ -27,11 +27,7 @@ export const TIME = {
 }
 
 export const FACTOR = {
-  GRAVITY: 100,
-  SCORE: {
-    BOOST: 20,
-    DEBRIS: 50
-  }
+  GRAVITY: 100
 }
 
 export const SPIN = {
@@ -45,6 +41,11 @@ export const DECAY = {
   SCORE: 500,
   SHIELD: 4000,
   TAIL: 200
+}
+
+export const SCORE = {
+  BOOST: 20,
+  DEBRIS: 50
 }
 
 export const SHAKE = {

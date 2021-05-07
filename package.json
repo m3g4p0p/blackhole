@@ -11,11 +11,8 @@
     "env": {
       "browser": true
     },
-    "overrides": [
-      {
-        "files": ["src/vendor/*.js"],
-        "rules": {}
-      }
+    "ignore": [
+      "src/vendor/"
     ]
   },
   "devDependencies": {

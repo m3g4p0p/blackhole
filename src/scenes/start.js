@@ -77,7 +77,8 @@ function initEffectControls () {
   ], -padding, 100)
 
   sound.clicks(() => {
-    toggleDisabled(sound, k.volume((k.volume() + 1) % 2) === 0)
+    const volume = k.volume((k.volume() + 1) % 2)
+    toggleDisabled(sound, volume === 0)
   })
 
   vibration.clicks(() => {

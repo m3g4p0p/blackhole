@@ -6,6 +6,7 @@ import {
   INITIAL_GRAVITY,
   JUMP_FORCE,
   MOVE,
+  SCORE,
   SHAKE,
   SIZE,
   SPIN,
@@ -64,12 +65,13 @@ export default function gameScene (
   ])
 
   function addScore (value, extra) {
-    score.value += value
-    score.text = score.value
-
     if (extra) {
+      value *= difficulty
       spawnScore(value)
     }
+
+    score.value += value
+    score.text = score.value
   }
 
   function addGravity (value) {
@@ -237,7 +239,7 @@ export default function gameScene (
   function smashDebris (debris) {
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
-    addScore(difficulty * FACTOR.SCORE.DEBRIS, true)
+    addScore(SCORE.DEBRIS, true)
   }
 
   function followMouse () {
@@ -314,7 +316,7 @@ export default function gameScene (
     k.destroy(boost)
     k.play('booster')
     shake(SHAKE.BOOST)
-    addScore(difficulty * FACTOR.SCORE.BOOST, true)
+    addScore(SCORE.BOOST, true)
     addGravity((INITIAL_GRAVITY - gravity.value) / 2)
 
     if (!isWrecked) {
