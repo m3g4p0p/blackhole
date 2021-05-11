@@ -45,6 +45,21 @@ export default function componentsPlugin (k) {
     }
   }
 
+  function spin (factor) {
+    return {
+      add () {
+        this.use([
+          k.rotate(0),
+          k.origin('center')
+        ])
+      },
+
+      update () {
+        this.angle += k.dt() * k.gravity() / factor
+      }
+    }
+  }
+
   function sync (object) {
     return {
       add () {
@@ -66,5 +81,5 @@ export default function componentsPlugin (k) {
     }
   }
 
-  return { age, decay, delta, sync }
+  return { age, decay, delta, spin, sync }
 }

@@ -1,4 +1,4 @@
-import kaboom from './vendor/kaboom.mjs'
+import kaboom from './vendor/kaboom.js'
 import componentsPlugin from './plugins/components.js'
 import displayPlugin from './plugins/display.js'
 import mathPlugin from './plugins/math.js'

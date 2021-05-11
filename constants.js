@@ -41,6 +41,7 @@ export const DECAY = {
   FIRE: 500,
   SCORE: 500,
   SHIELD: 4000,
+  SPARK: 2000,
   TAIL: 200
 }
 
