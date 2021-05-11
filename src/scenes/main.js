@@ -110,19 +110,15 @@ export default function gameScene (
     const { r, g, b } = boost.color
     const center = boost.pos
 
-    const spark = k.add([
+    k.add([
       k.rect(boost.width / 2, boost.height / 2),
       k.color(r, g, b),
       k.pos(center),
       k.spin(SPIN.SPARK),
-      k.decay(TIME.BOOST * 1000),
+      k.decay(DECAY.SPARK),
       'spark',
       { center }
     ])
-
-    boost.on('destroy', () => {
-      k.destroy(spark)
-    })
   }
 
   function spawnBoost () {
@@ -321,6 +317,7 @@ export default function gameScene (
     ship.jump(gravity.value * factor)
     k.destroy(boost)
     k.play('booster')
+    spawnSpark(boost)
     shake(SHAKE.BOOST)
     addScore(SCORE.BOOST, true)
     addGravity((INITIAL_GRAVITY - gravity.value) * factor)
@@ -381,7 +378,7 @@ export default function gameScene (
 
     spark.pos = spark.center.add(k
       .rotateVec(SIZE.BOOST.X, SIZE.BOOST.Y, spark.angle)
-      .scale(2 - spark.decay * 1.5)
+      .scale(2 - spark.decay)
     )
   })
 
@@ -420,7 +417,6 @@ export default function gameScene (
     music.detune(0)
   })
 
-  k.on('add', 'boost', spawnSpark)
   k.gravity(INITIAL_GRAVITY)
   k.camIgnore(['info'])
 
