@@ -14,6 +14,7 @@ export const SIZE = {
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },
   SHIELD: { X: 25, Y: 45 },
+  SAT: { X: 10, Y: 10 },
   STAR: { X: 5, Y: 5 },
   DEBRIS: {
     MIN: { X: 10, Y: 10 },
@@ -33,6 +34,7 @@ export const FACTOR = {
 export const SPIN = {
   BOOST: -1000,
   DEBRIS: 500,
+  SAT: 200,
   SPARK: -200
 }
 
@@ -46,7 +48,7 @@ export const DECAY = {
 }
 
 export const SCORE = {
-  BOOST: 20,
+  BOOST: 10,
   DEBRIS: 50
 }
 
@@ -60,6 +62,7 @@ export const THROTTLE = {
 }
 
 export const INITIAL_GRAVITY = 1000
+export const SAT_THRESH = 2
 export const STARS = 10
 export const CAM_THRESHOLD = 20
 export const JUMP_FORCE = 480

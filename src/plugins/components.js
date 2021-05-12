@@ -45,11 +45,31 @@ export default function componentsPlugin (k) {
     }
   }
 
-  function spin (factor) {
+  function orbit (object, distance) {
     return {
       add () {
         this.use([
-          k.rotate(0),
+          k.pos(object.pos),
+          k.origin(object.origin)
+        ])
+
+        object.on('destroy', () => {
+          k.destroy(this)
+        })
+      },
+
+      update () {
+        const rotation = k.rotateVec(distance, distance, this.angle)
+        this.pos = object.pos.add(rotation)
+      }
+    }
+  }
+
+  function spin (factor, offset = 0) {
+    return {
+      add () {
+        this.use([
+          k.rotate(offset),
           k.origin('center')
         ])
       },
@@ -81,5 +101,5 @@ export default function componentsPlugin (k) {
     }
   }
 
-  return { age, decay, delta, spin, sync }
+  return { age, decay, delta, orbit, spin, sync }
 }
