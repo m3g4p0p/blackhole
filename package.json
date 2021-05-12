@@ -1,11 +1,11 @@
 {
   "name": "blackhole",
-  "version": "0.1.23",
+  "version": "0.1.25",
   "scripts": {
     "prepare:prod": ".venv/bin/python prepare.py --exclude 'sw.js' '*.json' --add-root",
     "prepare:dev": ".venv/bin/python prepare.py src/media src/icons",
     "deploy": "yarn version --patch --no-git-tag-version && yarn prepare:prod && gh-pages -d dist",
-    "upgrade-kaboom": "curl https://kaboomjs.com/lib/latest/kaboom.js -o src/vendor/kaboom.js"
+    "upgrade-kaboom": "echo kaboom.mjs{,.map} | xargs -n 1 sh -c 'curl https://kaboomjs.com/lib/latest/$0 -o src/vendor/$0'"
   },
   "standard": {
     "env": {
