@@ -1,5 +1,6 @@
 import {
   CAM_THRESHOLD,
+  DECAY,
   DETUNE,
   FACTOR,
   INITIAL_GRAVITY,
@@ -282,6 +283,12 @@ export default function gameScene (
     fading.scale = 1.2 - fading.decay / 5
   })
 
+  k.action('satellite', satellite => {
+    if (!satellite.is('fading')) {
+      k.spawnTail(satellite)
+    }
+  })
+
   k.on('add', 'boost', boost => {
     k.wait(TIME.BOOST, () => {
       if (!boost.exists()) {
@@ -290,7 +297,14 @@ export default function gameScene (
 
       collected = 0
       k.destroy(boost)
-      k.destroyAll('satellite')
+
+      k.every('satellite', satellite => {
+        satellite.use([
+          k.layer('background'),
+          k.decay(DECAY.SAT),
+          'fading'
+        ])
+      })
     })
 
     if (boost.extra) {
@@ -314,7 +328,6 @@ export default function gameScene (
     music.detune(0)
   })
 
-  k.action('satellite', k.spawnTail)
   k.gravity(INITIAL_GRAVITY)
   k.camIgnore(['info'])
 
@@ -363,6 +376,7 @@ export default function gameScene (
   for (let i = 0; i < 10; i++) {
     k.keyPress(`${i}`, () => {
       collected = i
+      k.spawnSatellite(ship)
     })
   }
 }

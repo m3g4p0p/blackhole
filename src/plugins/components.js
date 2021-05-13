@@ -12,10 +12,7 @@ export default function componentsPlugin (k) {
   function decay (maxAge) {
     return {
       decay: 1,
-
-      add () {
-        this.use(age())
-      },
+      ...age(),
 
       update () {
         this.decay = 1 - this.age() / maxAge
