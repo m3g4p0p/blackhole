@@ -15,7 +15,7 @@ import {
   TIME
 } from '../constants.js'
 
-import { k } from '../game.js'
+import { k, develop } from '../game.js'
 import { capAbs, toggleMouseClass } from '../util.js'
 
 export default function gameScene (
@@ -26,6 +26,7 @@ export default function gameScene (
   const music = k.play('soundtrack')
   let isWrecked = false
   let hasShield = false
+  let collected = 0
 
   music.loop()
 
@@ -67,7 +68,7 @@ export default function gameScene (
   function addScore (value, extra) {
     if (extra) {
       value *= difficulty
-      spawnScore(value)
+      k.spawnScore(value, ship.pos)
     }
 
     score.value += value
@@ -94,152 +95,11 @@ export default function gameScene (
     k.camPos(k.camPos().x, k.height() / 2 + delta)
   }
 
-  function spawnScore (value) {
-    k.add([
-      k.text(value, 16),
-      k.color(1, 1, 0),
-      k.scale(1),
-      k.decay(DECAY.SCORE),
-      k.pos(ship.pos),
-      k.origin('center'),
-      'fading'
-    ])
-  }
-
-  function spawnSpark (boost) {
-    const { r, g, b } = boost.color
-    const center = boost.pos
-
-    k.add([
-      k.rect(boost.width / 2, boost.height / 2),
-      k.color(r, g, b),
-      k.pos(center),
-      k.spin(SPIN.SPARK),
-      k.decay(DECAY.SPARK),
-      'spark',
-      { center }
-    ])
-  }
-
-  function spawnBoost () {
-    const boost = k.add([
-      k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
-      k.pos(
-        k.rand(0, k.width() - SIZE.BOOST.X),
-        k.rand(0, k.height() - SIZE.BOOST.Y)
-      ),
-      k.color(0, 1, 0.5),
-      k.spin(SPIN.BOOST),
-      'boost'
-    ])
-
-    boost.on('destroy', () => {
-      k.wait(TIME.BOOST, spawnBoost)
-    })
-
-    k.wait(TIME.BOOST, () => {
-      k.destroy(boost)
-    })
-  }
-
-  function spawnFlame () {
-    const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
-    const direction = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
-
-    k.add([
-      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.add(offset)),
-      k.rotate(ship.angle),
-      k.color(...hasShield
-        ? [0, 1, 1]
-        : [1, 1, 0]
-      ),
-      k.scale(1),
-      k.layer('background'),
-      k.origin('center'),
-      k.decay(DECAY.FLAME),
-      'flame',
-      { direction }
-    ])
-  }
-
-  function spawnFire () {
-    k.add([
-      k.rect(ship.width, ship.width),
-      k.pos(ship.pos.x, ship.pos.y),
-      k.rotate(0),
-      k.color(1, 0, 0),
-      k.layer('background'),
-      k.origin('center'),
-      k.decay(DECAY.FIRE),
-      'fire'
-    ])
-  }
-
-  function spawnStar (y = 0) {
-    k.add([
-      k.rect(SIZE.STAR.X, SIZE.STAR.Y),
-      k.pos(
-        k.rand(0, k.width() - SIZE.STAR.X),
-        k.height() * 1.5 - k.camPos().y - y
-      ),
-      k.color(1, 1, 1, k.rand(0.1, 0.9)),
-      k.layer('background'),
-      k.age(),
-      'star'
-    ])
-  }
-
-  function spawnTail (debris) {
-    k.add([
-      k.scale(1),
-      k.color(0.5, 0.5, 0.5),
-      k.pos(debris.pos),
-      k.rect(debris.width, debris.height),
-      k.rotate(debris.angle),
-      k.origin('center'),
-      k.layer('background'),
-      k.decay(DECAY.TAIL),
-      'tail'
-    ])
-  }
-
-  function spawnDebris () {
-    const posX = k.rand(0, k.width())
-    const direction = k.rand(0, Math.sign(k.width() / 2 - posX))
-    const width = k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X)
-    const height = k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
-    const spin = SPIN.DEBRIS * Math.sign(width - height)
-
-    k.add([
-      k.rect(width, height),
-      k.pos(posX, -k.height()),
-      k.color(1, 1, 1),
-      k.body(),
-      k.spin(spin),
-      'debris',
-      { direction }
-    ])
-  }
-
-  function spawnShield () {
-    k.destroyAll('shield')
-
-    k.add([
-      k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
-      k.color(0, 1, 1),
-      k.scale(1),
-      k.layer('background'),
-      k.decay(DECAY.SHIELD),
-      k.sync(ship),
-      'shield',
-      'fading'
-    ])
-  }
-
   function smashDebris (debris) {
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
+
+    k.play('crash')
     addScore(SCORE.DEBRIS, true)
   }
 
@@ -263,7 +123,7 @@ export default function gameScene (
     const lastFlame = k.get('flame').pop()
 
     if (!lastFlame || lastFlame.age() > THROTTLE.FLAME) {
-      spawnFlame()
+      k.spawnFlame(ship, hasShield)
     }
   }
 
@@ -273,7 +133,7 @@ export default function gameScene (
     }
 
     ship.jump()
-    spawnFlame()
+    k.spawnFlame(ship, hasShield)
   }
 
   function shake (value) {
@@ -296,7 +156,7 @@ export default function gameScene (
     }
 
     if (isWrecked) {
-      return spawnFire()
+      return k.spawnFire(ship)
     }
 
     if (mouseControl) {
@@ -314,25 +174,29 @@ export default function gameScene (
   ship.collides('boost', boost => {
     const factor = difficulty / 2
 
+    collected++
     ship.jump(gravity.value * factor)
     k.destroy(boost)
+    k.destroyAll('shield')
     k.play('booster')
-    spawnSpark(boost)
+    k.spawnSpark(boost)
     shake(SHAKE.BOOST)
-    addScore(SCORE.BOOST, true)
+    addScore(SCORE.BOOST * collected, true)
     addGravity((INITIAL_GRAVITY - gravity.value) * factor)
 
-    if (!isWrecked) {
-      spawnShield()
+    if (isWrecked) {
+      return
+    }
+
+    k.spawnShield(ship)
+
+    if (boost.extra) {
+      k.spawnSatellite(ship)
     }
   })
 
   ship.collides('debris', debris => {
     shake(SHAKE.DEBRIS)
-
-    k.play('crash', {
-      volume: hasShield ? 1 : 2
-    })
 
     if (hasShield) {
       return smashDebris(debris)
@@ -341,7 +205,13 @@ export default function gameScene (
     isWrecked = true
     ship.jump(INITIAL_GRAVITY)
     ship.use(k.spin(SPIN.DEBRIS))
+    k.play('crash', { volume: 2 })
     k.destroy(debris)
+  })
+
+  k.collides('debris', 'satellite', (debris, satellite) => {
+    smashDebris(debris)
+    k.destroy(satellite)
   })
 
   k.action('star', star => {
@@ -349,7 +219,7 @@ export default function gameScene (
 
     if (star.pos.y < -star.height) {
       k.destroy(star)
-      spawnStar()
+      k.spawnStar()
     }
   })
 
@@ -369,7 +239,9 @@ export default function gameScene (
   })
 
   k.action('tail', tail => {
-    tail.color = k.rgba(0.5, 0.5, 0.5, tail.decay)
+    const { r, g, b } = tail.color
+
+    tail.color = k.rgba(r, g, b, tail.decay)
     tail.scale = k.vec2(tail.decay, tail.decay)
   })
 
@@ -378,8 +250,12 @@ export default function gameScene (
 
     spark.pos = spark.center.add(k
       .rotateVec(SIZE.BOOST.X, SIZE.BOOST.Y, spark.angle)
-      .scale(2 - spark.decay * 1.5)
+      .scale(2 - spark.decay)
     )
+  })
+
+  k.action('pulse', pulse => {
+    pulse.scale = Math.cos(pulse.angle)
   })
 
   k.action('debris', debris => {
@@ -395,7 +271,7 @@ export default function gameScene (
       debris.area.p1.dist(debris.area.p2)
     )
 
-    spawnTail(debris)
+    k.spawnTail(debris)
   })
 
   k.action('shield', shield => {
@@ -405,6 +281,41 @@ export default function gameScene (
   k.action('fading', fading => {
     fading.color.a = fading.decay
     fading.scale = 1.2 - fading.decay / 5
+  })
+
+  k.action('satellite', satellite => {
+    if (!satellite.is('fading')) {
+      k.spawnTail(satellite)
+    }
+  })
+
+  k.on('add', 'boost', boost => {
+    k.wait(TIME.BOOST, () => {
+      if (!boost.exists()) {
+        return
+      }
+
+      collected = 0
+      k.destroy(boost)
+
+      k.every('satellite', satellite => {
+        satellite.use([
+          k.layer('background'),
+          k.decay(DECAY.SAT),
+          'fading'
+        ])
+      })
+    })
+
+    if (boost.extra) {
+      k.spawnPulse(boost)
+    }
+  })
+
+  k.on('destroy', 'boost', () => {
+    k.wait(TIME.BOOST, () => {
+      k.spawnBoost(collected)
+    })
   })
 
   k.on('add', 'shield', () => {
@@ -447,11 +358,25 @@ export default function gameScene (
     }
   }))
 
-  k.loop(TIME.DEBRIS, spawnDebris)
-  k.wait(TIME.BOOST, spawnBoost)
+  k.wait(TIME.BOOST, () => {
+    k.spawnBoost(collected)
+  })
+
+  k.loop(TIME.DEBRIS, k.spawnDebris)
   toggleMouseClass(mouseControl)
 
   for (let i = 0; i < STARS; i++) {
-    spawnStar(k.rand(0, k.height()))
+    k.spawnStar(k.rand(0, k.height()))
+  }
+
+  if (!develop) {
+    return
+  }
+
+  for (let i = 0; i < 10; i++) {
+    k.keyPress(`${i}`, () => {
+      collected = i
+      k.spawnSatellite(ship)
+    })
   }
 }

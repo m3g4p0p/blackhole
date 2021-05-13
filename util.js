@@ -25,3 +25,15 @@ export function getHighscore () {
   const highscore = localStorage.getItem('highscore')
   return highscore ? parseInt(highscore, 10) : 0
 }
+
+export function findMissing (numbers) {
+  const max = Math.max(-1, ...numbers)
+
+  for (let i = 0; i < max; i++) {
+    if (!numbers.includes(i)) {
+      return i
+    }
+  }
+
+  return max + 1
+}

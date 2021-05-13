@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const cacheName = '0.1.25'
+const cacheName = '0.1.26'
 const urlsToCache = [
   '.',
   './style.css',
@@ -9,6 +9,7 @@ const urlsToCache = [
   './scenes/main.js',
   './vendor/kaboom.js',
   './vendor/kaboom.mjs.map',
+  './plugins/spawn.js',
   './plugins/components.js',
   './plugins/math.js',
   './plugins/display.js',

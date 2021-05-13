@@ -2,6 +2,7 @@ import kaboom from './vendor/kaboom.js'
 import componentsPlugin from './plugins/components.js'
 import displayPlugin from './plugins/display.js'
 import mathPlugin from './plugins/math.js'
+import spawnPlugin from './plugins/spawn.js'
 import startScene from './scenes/start.js'
 import mainScene from './scenes/main.js'
 import deathScene from './scenes/death.js'
@@ -19,7 +20,12 @@ export const k = window.k = kaboom({
   fullscreen: isMobile,
   width: isMobile ? null : SIZE.GAME.X,
   height: isMobile ? null : SIZE.GAME.Y,
-  plugins: [componentsPlugin, displayPlugin, mathPlugin],
+  plugins: [
+    componentsPlugin,
+    displayPlugin,
+    mathPlugin,
+    spawnPlugin
+  ],
   debug: develop
 })
 
