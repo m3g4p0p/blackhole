@@ -1,6 +1,5 @@
 import {
   CAM_THRESHOLD,
-  DECAY,
   DETUNE,
   FACTOR,
   INITIAL_GRAVITY,
@@ -69,7 +68,7 @@ export default function gameScene (
   function addScore (value, extra) {
     if (extra) {
       value *= difficulty
-      spawnScore(value)
+      k.spawnScore(value, ship.pos)
     }
 
     score.value += value
@@ -96,181 +95,11 @@ export default function gameScene (
     k.camPos(k.camPos().x, k.height() / 2 + delta)
   }
 
-  function spawnScore (value) {
-    k.add([
-      k.text(value, 16),
-      k.color(1, 1, 0),
-      k.scale(1),
-      k.decay(DECAY.SCORE),
-      k.pos(ship.pos),
-      k.origin('center'),
-      'fading'
-    ])
-  }
-
-  function spawnSpark (boost) {
-    const { r, g, b } = boost.color
-    const center = boost.pos
-
-    k.add([
-      k.rect(boost.width / 2, boost.height / 2),
-      k.color(r, g, b),
-      k.pos(center),
-      k.spin(SPIN.SPARK),
-      k.decay(DECAY.SPARK),
-      'spark',
-      { center }
-    ])
-  }
-
-  function spawnPulse (boost) {
-    const { r, g, b } = boost.color
-
-    k.add([
-      k.rect(1, k.height()),
-      k.color(r, g, b, 0.5),
-      k.scale(0),
-      k.sync(boost),
-      'pulse'
-    ])
-  }
-
-  function spawnBoost () {
-    const boost = k.add([
-      k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
-      k.pos(
-        k.rand(0, k.width() - SIZE.BOOST.X),
-        k.rand(0, k.height() - SIZE.BOOST.Y)
-      ),
-      k.color(0, 1, 0.5),
-      k.spin(SPIN.BOOST / Math.sqrt(collected + 1)),
-      'boost'
-    ])
-
-    boost.on('destroy', () => {
-      k.wait(TIME.BOOST, spawnBoost)
-    })
-
-    k.wait(TIME.BOOST, () => {
-      if (boost.exists()) {
-        collected = 0
-        k.destroy(boost)
-      }
-    })
-
-    if (collected > SAT_THRESH - 1) {
-      spawnPulse(boost)
-    }
-  }
-
-  function spawnFlame () {
-    const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
-    const direction = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
-
-    k.add([
-      k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
-      k.pos(ship.pos.add(offset)),
-      k.rotate(ship.angle),
-      k.color(...hasShield
-        ? [0, 1, 1]
-        : [1, 1, 0]
-      ),
-      k.scale(1),
-      k.layer('background'),
-      k.origin('center'),
-      k.decay(DECAY.FLAME),
-      'flame',
-      { direction }
-    ])
-  }
-
-  function spawnFire () {
-    k.add([
-      k.rect(ship.width, ship.width),
-      k.pos(ship.pos.x, ship.pos.y),
-      k.rotate(0),
-      k.color(1, 0, 0),
-      k.layer('background'),
-      k.origin('center'),
-      k.decay(DECAY.FIRE),
-      'fire'
-    ])
-  }
-
-  function spawnStar (y = 0) {
-    k.add([
-      k.rect(SIZE.STAR.X, SIZE.STAR.Y),
-      k.pos(
-        k.rand(0, k.width() - SIZE.STAR.X),
-        k.height() * 1.5 - k.camPos().y - y
-      ),
-      k.color(1, 1, 1, k.rand(0.1, 0.9)),
-      k.layer('background'),
-      k.age(),
-      'star'
-    ])
-  }
-
-  function spawnTail (object) {
-    const { r, g, b } = object.color
-
-    k.add([
-      k.scale(1),
-      k.color(r / 2, g / 2, b / 2),
-      k.pos(object.pos),
-      k.rect(object.width, object.height),
-      k.rotate(object.angle),
-      k.origin('center'),
-      k.layer('background'),
-      k.decay(DECAY.TAIL),
-      'tail'
-    ])
-  }
-
-  function spawnDebris () {
-    const posX = k.rand(0, k.width())
-    const direction = k.rand(0, Math.sign(k.width() / 2 - posX))
-    const width = k.rand(SIZE.DEBRIS.MIN.X, SIZE.DEBRIS.MAX.X)
-    const height = k.rand(SIZE.DEBRIS.MIN.Y, SIZE.DEBRIS.MAX.Y)
-    const spin = SPIN.DEBRIS * Math.sign(width - height)
-
-    k.add([
-      k.rect(width, height),
-      k.pos(posX, -k.height()),
-      k.color(1, 1, 1),
-      k.body(),
-      k.spin(spin),
-      'debris',
-      { direction }
-    ])
-  }
-
-  function spawnShield () {
-    k.add([
-      k.rect(SIZE.SHIELD.X, SIZE.SHIELD.Y),
-      k.color(0, 1, 1),
-      k.scale(1),
-      k.layer('background'),
-      k.decay(DECAY.SHIELD),
-      k.sync(ship),
-      'shield',
-      'fading'
-    ])
-  }
-
-  function spawnSattelite (shield, index) {
-    k.add([
-      k.rect(SIZE.SAT.X, SIZE.SAT.Y),
-      k.color(0, 1, 1),
-      k.spin(SPIN.SAT, Math.PI * 2 / (index + 1)),
-      k.orbit(shield, SIZE.SHIP.X * index + SIZE.SHIP.Y * 2),
-      'satellite'
-    ])
-  }
-
   function smashDebris (debris) {
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
+
+    k.play('crash')
     addScore(SCORE.DEBRIS, true)
   }
 
@@ -294,7 +123,7 @@ export default function gameScene (
     const lastFlame = k.get('flame').pop()
 
     if (!lastFlame || lastFlame.age() > THROTTLE.FLAME) {
-      spawnFlame()
+      k.spawnFlame(ship, hasShield)
     }
   }
 
@@ -304,7 +133,7 @@ export default function gameScene (
     }
 
     ship.jump()
-    spawnFlame()
+    k.spawnFlame(ship, hasShield)
   }
 
   function shake (value) {
@@ -327,7 +156,7 @@ export default function gameScene (
     }
 
     if (isWrecked) {
-      return spawnFire()
+      return k.spawnFire(ship)
     }
 
     if (mouseControl) {
@@ -350,22 +179,18 @@ export default function gameScene (
     k.destroy(boost)
     k.destroyAll('shield')
     k.play('booster')
-    spawnSpark(boost)
+    k.spawnSpark(boost)
     shake(SHAKE.BOOST)
     addScore(SCORE.BOOST * collected, true)
     addGravity((INITIAL_GRAVITY - gravity.value) * factor)
 
     if (!isWrecked) {
-      spawnShield()
+      k.spawnShield(ship)
     }
   })
 
   ship.collides('debris', debris => {
     shake(SHAKE.DEBRIS)
-
-    k.play('crash', {
-      volume: hasShield ? 1 : 2
-    })
 
     if (hasShield) {
       return smashDebris(debris)
@@ -374,6 +199,7 @@ export default function gameScene (
     isWrecked = true
     ship.jump(INITIAL_GRAVITY)
     ship.use(k.spin(SPIN.DEBRIS))
+    k.play('crash', { volume: 2 })
     k.destroy(debris)
   })
 
@@ -386,7 +212,7 @@ export default function gameScene (
 
     if (star.pos.y < -star.height) {
       k.destroy(star)
-      spawnStar()
+      k.spawnStar()
     }
   })
 
@@ -438,7 +264,7 @@ export default function gameScene (
       debris.area.p1.dist(debris.area.p2)
     )
 
-    spawnTail(debris)
+    k.spawnTail(debris)
   })
 
   k.action('shield', shield => {
@@ -450,13 +276,51 @@ export default function gameScene (
     fading.scale = 1.2 - fading.decay / 5
   })
 
+  k.on('add', 'boost', boost => {
+    k.wait(TIME.BOOST, () => {
+      if (boost.exists()) {
+        collected = 0
+        k.destroy(boost)
+      }
+    })
+
+    if (collected > SAT_THRESH - 1) {
+      k.spawnPulse(boost)
+    }
+  })
+
+  k.on('destroy', 'boost', () => {
+    k.wait(TIME.BOOST, () => {
+      k.spawnBoost(collected)
+    })
+  })
+
   k.on('add', 'shield', shield => {
     hasShield = true
     music.detune(DETUNE)
     k.destroyAll('satellite')
 
+    //  1 -> 1 (0,)
+    //  2 -> 1 (0,1)
+
+    //  3 -> 2 (2,)
+    //  4 -> 2 (2,3)
+    //  5 -> 2 (2,3,4)
+
+    //  6 -> 3 (5,)
+    //  7 -> 3 (5,6)
+    //  8 -> 3 (5,6,7)
+    //  9 -> 3 (5,6,7,8)
+
+    // 10 -> 4 (9,)
+    // 11 -> 4 (9,10)
+    // 12 -> 4 (9,10,11)
+    // 13 -> 4 (9,10,11,12)
+    // 14 -> 4 (9,10,11,12,13)
+
+    // 15 -> 5 (14,)
     for (let i = 0; i < (collected - SAT_THRESH) / 2; i++) {
-      spawnSattelite(shield, i)
+      k.spawnStallite(shield, i)
     }
   })
 
@@ -465,7 +329,7 @@ export default function gameScene (
     music.detune(0)
   })
 
-  k.action('satellite', spawnTail)
+  k.action('satellite', k.spawnTail)
   k.gravity(INITIAL_GRAVITY)
   k.camIgnore(['info'])
 
@@ -496,12 +360,15 @@ export default function gameScene (
     }
   }))
 
-  k.loop(TIME.DEBRIS, spawnDebris)
-  k.wait(TIME.BOOST, spawnBoost)
+  k.wait(TIME.BOOST, () => {
+    k.spawnBoost(collected)
+  })
+
+  k.loop(TIME.DEBRIS, k.spawnDebris)
   toggleMouseClass(mouseControl)
 
   for (let i = 0; i < STARS; i++) {
-    spawnStar(k.rand(0, k.height()))
+    k.spawnStar(k.rand(0, k.height()))
   }
 
   if (!develop) {
