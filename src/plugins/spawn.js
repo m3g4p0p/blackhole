@@ -1,7 +1,10 @@
-import { DECAY, SIZE, SPIN } from '../constants.js'
+import { DECAY, SAT_THRESH, SIZE, SPIN } from '../constants.js'
+import { findMissing } from '../util.js'
 
 export default function spawnPlugin (k) {
   function spawnBoost (collected) {
+    const extra = collected % SAT_THRESH === SAT_THRESH - 1
+
     return k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
       k.pos(
@@ -10,7 +13,8 @@ export default function spawnPlugin (k) {
       ),
       k.color(0, 1, 0.5),
       k.spin(SPIN.BOOST / Math.sqrt(collected + 1)),
-      'boost'
+      'boost',
+      { extra }
     ])
   }
 
@@ -78,13 +82,17 @@ export default function spawnPlugin (k) {
     ])
   }
 
-  function spawnStallite (shield, index) {
+  function spawnSatellite (ship) {
+    const existing = k.get('satellite').map(({ index }) => index)
+    const index = findMissing(existing)
+
     return k.add([
       k.rect(SIZE.SAT.X, SIZE.SAT.Y),
       k.color(0, 1, 1),
       k.spin(SPIN.SAT, Math.PI * 2 / (index + 1)),
-      k.orbit(shield, SIZE.SHIP.X * index + SIZE.SHIP.Y * 2),
-      'satellite'
+      k.orbit(ship, SIZE.SHIP.X * index + SIZE.SHIP.Y * 2),
+      'satellite',
+      { index }
     ])
   }
 
@@ -164,7 +172,7 @@ export default function spawnPlugin (k) {
     spawnFire,
     spawnFlame,
     spawnPulse,
-    spawnStallite,
+    spawnSatellite,
     spawnScore,
     spawnShield,
     spawnSpark,

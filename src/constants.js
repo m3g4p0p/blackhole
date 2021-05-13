@@ -62,7 +62,7 @@ export const THROTTLE = {
 }
 
 export const INITIAL_GRAVITY = 1000
-export const SAT_THRESH = 2
+export const SAT_THRESH = 3
 export const STARS = 10
 export const CAM_THRESHOLD = 20
 export const JUMP_FORCE = 480

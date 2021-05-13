@@ -5,7 +5,6 @@ import {
   INITIAL_GRAVITY,
   JUMP_FORCE,
   MOVE,
-  SAT_THRESH,
   SCORE,
   SHAKE,
   SIZE,
@@ -184,8 +183,14 @@ export default function gameScene (
     addScore(SCORE.BOOST * collected, true)
     addGravity((INITIAL_GRAVITY - gravity.value) * factor)
 
-    if (!isWrecked) {
-      k.spawnShield(ship)
+    if (isWrecked) {
+      return
+    }
+
+    k.spawnShield(ship)
+
+    if (boost.extra) {
+      k.spawnSatellite(ship)
     }
   })
 
@@ -203,8 +208,9 @@ export default function gameScene (
     k.destroy(debris)
   })
 
-  k.collides('debris', 'satellite', debris => {
+  k.collides('debris', 'satellite', (debris, satellite) => {
     smashDebris(debris)
+    k.destroy(satellite)
   })
 
   k.action('star', star => {
@@ -278,13 +284,16 @@ export default function gameScene (
 
   k.on('add', 'boost', boost => {
     k.wait(TIME.BOOST, () => {
-      if (boost.exists()) {
-        collected = 0
-        k.destroy(boost)
+      if (!boost.exists()) {
+        return
       }
+
+      collected = 0
+      k.destroy(boost)
+      k.destroyAll('satellite')
     })
 
-    if (collected > SAT_THRESH - 1) {
+    if (boost.extra) {
       k.spawnPulse(boost)
     }
   })
@@ -295,33 +304,9 @@ export default function gameScene (
     })
   })
 
-  k.on('add', 'shield', shield => {
+  k.on('add', 'shield', () => {
     hasShield = true
     music.detune(DETUNE)
-    k.destroyAll('satellite')
-
-    //  1 -> 1 (0,)
-    //  2 -> 1 (0,1)
-
-    //  3 -> 2 (2,)
-    //  4 -> 2 (2,3)
-    //  5 -> 2 (2,3,4)
-
-    //  6 -> 3 (5,)
-    //  7 -> 3 (5,6)
-    //  8 -> 3 (5,6,7)
-    //  9 -> 3 (5,6,7,8)
-
-    // 10 -> 4 (9,)
-    // 11 -> 4 (9,10)
-    // 12 -> 4 (9,10,11)
-    // 13 -> 4 (9,10,11,12)
-    // 14 -> 4 (9,10,11,12,13)
-
-    // 15 -> 5 (14,)
-    for (let i = 0; i < (collected - SAT_THRESH) / 2; i++) {
-      k.spawnStallite(shield, i)
-    }
   })
 
   k.on('destroy', 'shield', () => {
