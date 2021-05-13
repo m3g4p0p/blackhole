@@ -100,6 +100,7 @@ export default function gameScene (
     debris.direction = debris.direction * -2
 
     k.play('crash')
+    debris.use(k.layer('background'))
     addScore(SCORE.DEBRIS, true)
   }
 
