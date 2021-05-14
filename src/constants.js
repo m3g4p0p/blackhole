@@ -58,12 +58,16 @@ export const SHAKE = {
   DEBRIS: 12
 }
 
+export const THRESH = {
+  SAT: 3,
+  INFO: 6
+}
+
 export const THROTTLE = {
   FLAME: 40
 }
 
 export const INITIAL_GRAVITY = 1000
-export const SAT_THRESH = 3
 export const STARS = 10
 export const CAM_THRESHOLD = 20
 export const JUMP_FORCE = 480

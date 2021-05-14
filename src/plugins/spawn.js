@@ -1,9 +1,9 @@
-import { DECAY, SAT_THRESH, SIZE, SPIN } from '../constants.js'
+import { DECAY, SIZE, SPIN, THRESH } from '../constants.js'
 import { findMissing } from '../util.js'
 
 export default function spawnPlugin (k) {
   function spawnBoost (collected) {
-    const extra = collected % SAT_THRESH === SAT_THRESH - 1
+    const extra = collected % THRESH.SAT === THRESH.SAT - 1
 
     return k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
@@ -75,11 +75,13 @@ export default function spawnPlugin (k) {
     size = 24,
     pos = k.center()
   ) {
+    const factor = Math.max(1, text.length / THRESH.INFO)
+
     return k.add([
       k.text(text, size),
       k.color(1, 1, 0),
       k.scale(1),
-      k.decay(DECAY.INFO),
+      k.decay(DECAY.INFO * factor),
       k.pos(pos),
       k.origin('center'),
       'fading'
