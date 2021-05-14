@@ -26,6 +26,8 @@ export default function gameScene (
   const music = k.play('soundtrack')
   let isWrecked = false
   let hasShield = false
+  let hadShield = false
+  let hadSatellite = false
   let collected = 0
 
   music.loop()
@@ -206,6 +208,7 @@ export default function gameScene (
     isWrecked = true
     ship.jump(INITIAL_GRAVITY)
     ship.use(k.spin(SPIN.DEBRIS))
+    k.spawnInfo('FUCK', 32)
     k.play('crash', { volume: 2 })
     k.destroy(debris)
   })
@@ -320,13 +323,25 @@ export default function gameScene (
   })
 
   k.on('add', 'shield', () => {
-    hasShield = true
+    if (!hadShield) {
+      k.spawnInfo('SHIELD')
+    }
+
+    hasShield = hadShield = true
     music.detune(DETUNE)
   })
 
   k.on('destroy', 'shield', () => {
     hasShield = false
     music.detune(0)
+  })
+
+  k.on('add', 'satellite', () => {
+    if (!hadSatellite) {
+      k.spawnInfo('SATELLITE')
+    }
+
+    hadSatellite = true
   })
 
   k.gravity(INITIAL_GRAVITY)
@@ -377,7 +392,6 @@ export default function gameScene (
   for (let i = 0; i < 10; i++) {
     k.keyPress(`${i}`, () => {
       collected = i
-      k.spawnSatellite(ship)
     })
   }
 }

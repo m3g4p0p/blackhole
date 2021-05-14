@@ -70,6 +70,22 @@ export default function spawnPlugin (k) {
     ])
   }
 
+  function spawnInfo (
+    text,
+    size = 24,
+    pos = k.center()
+  ) {
+    return k.add([
+      k.text(text, size),
+      k.color(1, 1, 0),
+      k.scale(1),
+      k.decay(DECAY.INFO),
+      k.pos(pos),
+      k.origin('center'),
+      'fading'
+    ])
+  }
+
   function spawnPulse (boost) {
     const { r, g, b } = boost.color
 
@@ -97,15 +113,7 @@ export default function spawnPlugin (k) {
   }
 
   function spawnScore (value, pos) {
-    return k.add([
-      k.text(value, 16),
-      k.color(1, 1, 0),
-      k.scale(1),
-      k.decay(DECAY.SCORE),
-      k.pos(pos),
-      k.origin('center'),
-      'fading'
-    ])
+    return spawnInfo(value, 15 + value / 10, pos)
   }
 
   function spawnShield (ship) {
@@ -171,6 +179,7 @@ export default function spawnPlugin (k) {
     spawnDebris,
     spawnFire,
     spawnFlame,
+    spawnInfo,
     spawnPulse,
     spawnSatellite,
     spawnScore,
