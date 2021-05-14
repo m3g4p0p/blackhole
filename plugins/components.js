@@ -1,4 +1,10 @@
 export default function componentsPlugin (k) {
+  function link (master, slave) {
+    master.on('destroy', () => {
+      k.destroy(slave)
+    })
+  }
+
   function age () {
     const created = Date.now()
 
@@ -50,9 +56,7 @@ export default function componentsPlugin (k) {
           k.origin(object.origin)
         ])
 
-        object.on('destroy', () => {
-          k.destroy(this)
-        })
+        link(object, this)
       },
 
       update () {
@@ -86,9 +90,7 @@ export default function componentsPlugin (k) {
           k.origin(object.origin)
         ])
 
-        object.on('destroy', () => {
-          k.destroy(this)
-        })
+        link(object, this)
       },
 
       update () {
