@@ -65,10 +65,10 @@ export default function gameScene (
     k.delta()
   ])
 
-  function addScore (value, extra) {
+  function addScore (value, extra, pos = ship.pos) {
     if (extra) {
       value *= difficulty
-      k.spawnScore(value, ship.pos)
+      k.spawnScore(value, pos)
     }
 
     score.value += value
@@ -100,7 +100,8 @@ export default function gameScene (
     debris.direction = debris.direction * -2
 
     k.play('crash')
-    addScore(SCORE.DEBRIS, true)
+    debris.use(k.layer('background'))
+    addScore(SCORE.DEBRIS, true, debris.pos)
   }
 
   function followMouse () {
