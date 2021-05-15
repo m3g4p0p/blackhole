@@ -122,6 +122,16 @@ export default function gameScene (
     ship.move(delta, MOVE.SHIP.Y * Math.abs(delta) / MOVE.SHIP.X)
   }
 
+  function destroySatellites () {
+    k.every('satellite', satellite => {
+      satellite.use([
+        k.layer('background'),
+        k.decay(DECAY.SAT),
+        'fading'
+      ])
+    })
+  }
+
   function sustainFlame () {
     const lastFlame = k.get('flame').pop()
 
@@ -211,6 +221,7 @@ export default function gameScene (
     k.spawnInfo('FUCK', 32)
     k.play('crash', { volume: 2 })
     k.destroy(debris)
+    destroySatellites()
   })
 
   k.collides('debris', 'satellite', (debris, satellite) => {
@@ -301,14 +312,7 @@ export default function gameScene (
 
       collected = 0
       k.destroy(boost)
-
-      k.every('satellite', satellite => {
-        satellite.use([
-          k.layer('background'),
-          k.decay(DECAY.SAT),
-          'fading'
-        ])
-      })
+      destroySatellites()
     })
 
     if (boost.extra) {

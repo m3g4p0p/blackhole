@@ -9,6 +9,7 @@ const urlsToCache = [
   './scenes/main.js',
   './vendor/kaboom.js',
   './vendor/kaboom.mjs.map',
+  './vendor/kaboom.mjs',
   './plugins/spawn.js',
   './plugins/components.js',
   './plugins/math.js',
