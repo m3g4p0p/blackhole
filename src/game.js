@@ -22,6 +22,7 @@ export const k = window.k = kaboom({
   fullscreen: isMobile,
   width: isMobile ? null : SIZE.GAME.X,
   height: isMobile ? null : SIZE.GAME.Y,
+  clearColor: [0, 0, 0],
   plugins: [
     componentsPlugin,
     displayPlugin,
