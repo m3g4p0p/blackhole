@@ -353,6 +353,11 @@ es-to-primitive@^1.2.1:
     is-date-object "^1.0.1"
     is-symbol "^1.0.2"
 
+esbuild@^0.11.22:
+  version "0.11.22"
+  resolved "https://registry.yarnpkg.com/esbuild/-/esbuild-0.11.22.tgz#239009cc1519179c7a7000bc321482a1e74de999"
+  integrity sha512-1e6BDytHzTxRlUOCe7M0+ZV5JqKARByHwz1iP5UNmxt2TEOyI8E/1gLLNCyaPjpXfCr1TThxTyFO9MjF5mFLvA==
+
 escape-string-regexp@^1.0.2, escape-string-regexp@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/escape-string-regexp/-/escape-string-regexp-1.0.5.tgz#1b61c0562190a8dff6ae3bb2cf0200ca130b86d4"
@@ -968,6 +973,11 @@ jsonfile@^4.0.0:
   dependencies:
     array-includes "^3.1.2"
     object.assign "^4.1.2"
+
+kaboom@^0.5.0:
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/kaboom/-/kaboom-0.5.0.tgz#8ce189315c53dfc5fc65e125bd97f85b4bd6d6a7"
+  integrity sha512-d5hG7YdTSOQrc2935jD0yRlSgwB787mHC3VxCt8FZOJFD5nF3PC2OYp5xRbXGYTyxaAIGOt55jDW+VgDtO7nPQ==
 
 levn@^0.4.1:
   version "0.4.1"
