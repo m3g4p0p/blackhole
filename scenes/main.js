@@ -26,8 +26,6 @@ export default function gameScene (
   const music = k.play('soundtrack')
   let isWrecked = false
   let hasShield = false
-  let hadShield = false
-  let hadSatellite = false
   let collected = 0
 
   music.loop()
@@ -327,25 +325,13 @@ export default function gameScene (
   })
 
   k.on('add', 'shield', () => {
-    if (!hadShield) {
-      k.spawnInfo('SHIELD')
-    }
-
-    hasShield = hadShield = true
+    hasShield = true
     music.detune(DETUNE)
   })
 
   k.on('destroy', 'shield', () => {
     hasShield = false
     music.detune(0)
-  })
-
-  k.on('add', 'satellite', () => {
-    if (!hadSatellite) {
-      k.spawnInfo('SATELLITE')
-    }
-
-    hadSatellite = true
   })
 
   k.gravity(INITIAL_GRAVITY)
