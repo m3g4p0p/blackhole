@@ -26,6 +26,7 @@ export default function gameScene (
   const music = k.play('soundtrack')
   let isWrecked = false
   let hasShield = false
+  let collected = 0
 
   music.loop()
 
@@ -96,7 +97,7 @@ export default function gameScene (
 
   function spawnScore (value) {
     k.add([
-      k.text(value, 16),
+      k.text(value, 15 + value / 10),
       k.color(1, 1, 0),
       k.scale(1),
       k.decay(DECAY.SCORE),
@@ -138,6 +139,11 @@ export default function gameScene (
     })
 
     k.wait(TIME.BOOST, () => {
+      if (!boost.exists()) {
+        return
+      }
+
+      collected = 0
       k.destroy(boost)
     })
   }
@@ -314,12 +320,13 @@ export default function gameScene (
   ship.collides('boost', boost => {
     const factor = difficulty / 2
 
+    collected++
     ship.jump(gravity.value * factor)
     k.destroy(boost)
     k.play('booster')
     spawnSpark(boost)
     shake(SHAKE.BOOST)
-    addScore(SCORE.BOOST, true)
+    addScore(SCORE.BOOST * collected, true)
     addGravity((INITIAL_GRAVITY - gravity.value) * factor)
 
     if (!isWrecked) {

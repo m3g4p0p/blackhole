@@ -46,7 +46,7 @@ export const DECAY = {
 }
 
 export const SCORE = {
-  BOOST: 20,
+  BOOST: 10,
   DEBRIS: 50
 }
 
