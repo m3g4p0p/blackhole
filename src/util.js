@@ -1,4 +1,4 @@
-import { develop } from './game.js'
+import { develop } from './game'
 
 export function cap (value, min, max) {
   return Math.max(min, Math.min(max, value))

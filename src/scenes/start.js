@@ -1,6 +1,6 @@
-import { DIFFICULTY } from '../constants.js'
-import { k, blackhole, isMobile, padding } from '../game.js'
-import { cap, requestFullscreen, getHighscore } from '../util.js'
+import { DIFFICULTY } from '../constants'
+import { k, blackhole, isMobile, padding } from '../game'
+import { cap, requestFullscreen, getHighscore } from '../util'
 
 let difficulty = DIFFICULTY.MIN
 let highscore = getHighscore()

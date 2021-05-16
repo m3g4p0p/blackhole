@@ -1,12 +1,12 @@
-import kaboom from './vendor/kaboom.js'
-import componentsPlugin from './plugins/components.js'
-import displayPlugin from './plugins/display.js'
-import mathPlugin from './plugins/math.js'
-import spawnPlugin from './plugins/spawn.js'
-import startScene from './scenes/start.js'
-import mainScene from './scenes/main.js'
-import deathScene from './scenes/death.js'
-import { SIZE } from './constants.js'
+import kaboom from 'kaboom'
+import componentsPlugin from './plugins/components'
+import displayPlugin from './plugins/display'
+import mathPlugin from './plugins/math'
+import spawnPlugin from './plugins/spawn'
+import startScene from './scenes/start'
+import mainScene from './scenes/main'
+import deathScene from './scenes/death'
+import { SIZE } from './constants'
 
 export const { blackhole } = window
 export const develop = window.location.pathname.startsWith('/src')

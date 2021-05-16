@@ -53,7 +53,7 @@ def find_files():
 
 
 shutil.rmtree('dist', ignore_errors=True)
-shutil.copytree('src', 'dist')
+shutil.copytree('src', 'dist', ignore=shutil.ignore_patterns('*.js'))
 file_list = find_files()
 
 with open('package.json') as package_json:

@@ -13,10 +13,10 @@ import {
   STARS,
   THROTTLE,
   TIME
-} from '../constants.js'
+} from '../constants'
 
-import { k, develop } from '../game.js'
-import { capAbs, toggleMouseClass } from '../util.js'
+import { k, develop } from '../game'
+import { capAbs, toggleMouseClass } from '../util'
 
 export default function gameScene (
   difficulty,

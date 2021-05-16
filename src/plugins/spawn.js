@@ -1,5 +1,5 @@
-import { DECAY, SIZE, SPIN, THRESH } from '../constants.js'
-import { findMissing } from '../util.js'
+import { DECAY, SIZE, SPIN, THRESH } from '../constants'
+import { findMissing } from '../util'
 
 export default function spawnPlugin (k) {
   function spawnBoost (collected) {

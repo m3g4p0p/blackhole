@@ -1,5 +1,5 @@
-import { k, padding } from '../game.js'
-import { toggleMouseClass } from '../util.js'
+import { k, padding } from '../game'
+import { toggleMouseClass } from '../util'
 
 export default function deathScene (score, gotWrecked) {
   k.addMessage([
