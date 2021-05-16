@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["../src/sw.js"],
+  "sourcesContent": ["/* eslint-disable no-undef */\nconst cacheName = VERSION\nconst urlsToCache = URLS_TO_CACHE\n/* eslint-enable no-undef */\n\nself.addEventListener('install', event => {\n  event.waitUntil(\n    caches.open(cacheName).then(cache => cache.addAll(urlsToCache))\n  )\n})\n\nself.addEventListener('fetch', event => {\n  event.respondWith(\n    caches.match(event.request).then(response => {\n      return response || fetch(event.request)\n    })\n  )\n})\n\nself.addEventListener('activate', event => {\n  event.waitUntil(\n    caches.keys().then(cacheNames => {\n      return Promise.all(\n        cacheNames.map(name => {\n          if (name !== cacheName) {\n            return caches.delete(name)\n          }\n\n          return null\n        })\n      )\n    })\n  )\n})\n"],
+  "mappings": "0JACA,GAAM,GAAY,SACZ,EAAc,EAGpB,KAAK,iBAAiB,UAAW,GAAS,CACxC,EAAM,UACJ,OAAO,KAAK,GAAW,KAAK,GAAS,EAAM,OAAO,OAItD,KAAK,iBAAiB,QAAS,GAAS,CACtC,EAAM,YACJ,OAAO,MAAM,EAAM,SAAS,KAAK,GACxB,GAAY,MAAM,EAAM,aAKrC,KAAK,iBAAiB,WAAY,GAAS,CACzC,EAAM,UACJ,OAAO,OAAO,KAAK,GACV,QAAQ,IACb,EAAW,IAAI,GACT,IAAS,EACJ,OAAO,OAAO,GAGhB",
+  "names": []
+}
