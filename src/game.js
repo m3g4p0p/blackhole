@@ -8,8 +8,10 @@ import mainScene from './scenes/main'
 import deathScene from './scenes/death'
 import { SIZE } from './constants'
 
-export const { blackhole } = window
-export const develop = window.location.pathname.startsWith('/src')
+/* eslint-disable no-undef */
+export const blackhole = VERSION
+export const develop = DEVELOP
+/* eslint-enable no-undef */
 
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||
@@ -43,6 +45,6 @@ k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
 
-if ('serviceWorker' in navigator && blackhole) {
+if ('serviceWorker' in navigator && !develop) {
   navigator.serviceWorker.register('sw.js').catch(console.error)
 }

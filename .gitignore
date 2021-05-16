@@ -2,5 +2,4 @@
 .vscode
 node_modules
 dist
-src/vendor
 yarn-error.log

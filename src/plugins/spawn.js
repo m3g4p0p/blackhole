@@ -1,9 +1,12 @@
 import { DECAY, SIZE, SPIN, THRESH } from '../constants'
 import { findMissing } from '../util'
+import { disabled } from '../config'
 
 export default function spawnPlugin (k) {
   function spawnBoost (collected) {
-    const extra = collected % THRESH.SAT === THRESH.SAT - 1
+    const extra = disabled.extraBoost
+      ? false
+      : collected % THRESH.SAT === THRESH.SAT - 1
 
     return k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
