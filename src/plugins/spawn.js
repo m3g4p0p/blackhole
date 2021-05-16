@@ -115,7 +115,7 @@ export default function spawnPlugin (k) {
   }
 
   function spawnScore (value, pos) {
-    return spawnInfo(value, 15 + value / 10, pos)
+    return spawnInfo(`${value}`, 15 + value / 10, pos)
   }
 
   function spawnShield (ship) {
