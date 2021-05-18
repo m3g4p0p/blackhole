@@ -16,10 +16,10 @@ const {
   watch = false
 } = yargs.parse(hideBin(process.argv))
 
-prepare().then(async () => {
+prepare('src', 'dist').then(async dist => {
   return build({
     entryPoints: ['src/game.js', 'src/sw.js'],
-    outdir: 'dist',
+    outdir: dist,
     bundle: true,
     minify: true,
     sourcemap: true,
@@ -28,7 +28,7 @@ prepare().then(async () => {
       develop,
       experimental,
       version,
-      URLS_TO_CACHE: await urlsToCache()
+      URLS_TO_CACHE: await urlsToCache(dist)
     })
   })
 }).catch(handleError)

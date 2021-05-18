@@ -1,10 +1,7 @@
 const copy = require('recursive-copy')
 const fs = require('fs/promises')
+const path = require('path')
 const { version } = require('../package.json')
-
-function cleanDist () {
-  return fs.rmdir('dist', { recursive: true })
-}
 
 function define (entries) {
   const define = Object
@@ -22,20 +19,20 @@ function handleError (error) {
   process.exit(1)
 }
 
-async function prepare () {
-  await cleanDist()
-  await fs.mkdir('dist')
+async function prepare (src, dist) {
+  await fs.rmdir(dist, { recursive: true })
+  await fs.mkdir(dist)
 
-  await copy('src', 'dist', {
+  await copy(src, dist, {
     filter: filename => !filename.endsWith('.js')
   })
 
-  return cleanDist
+  return path.resolve(dist)
 }
 
-async function urlsToCache () {
+async function urlsToCache (src) {
   const paths = ['icons', 'media'].map(dir => fs
-    .readdir('src/' + dir)
+    .readdir(path.join(src, dir))
     .then(files => files.map(file => `./${dir}/${file}`))
   )
 
