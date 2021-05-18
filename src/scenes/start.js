@@ -1,5 +1,6 @@
 import { DIFFICULTY } from '../constants'
-import { k, blackhole, isMobile, padding } from '../game'
+import { blackhole } from '../config'
+import { k, isMobile, padding } from '../game'
 import { cap, requestFullscreen, getHighscore } from '../util'
 
 let difficulty = DIFFICULTY.MIN

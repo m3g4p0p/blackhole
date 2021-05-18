@@ -15,7 +15,8 @@ import {
   TIME
 } from '../constants'
 
-import { k, develop } from '../game'
+import { k } from '../game'
+import { develop } from '../config'
 import { capAbs, toggleMouseClass } from '../util'
 
 export default function gameScene (

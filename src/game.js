@@ -7,11 +7,7 @@ import startScene from './scenes/start'
 import mainScene from './scenes/main'
 import deathScene from './scenes/death'
 import { SIZE } from './constants'
-
-/* eslint-disable no-undef */
-export const blackhole = VERSION
-export const develop = DEVELOP
-/* eslint-enable no-undef */
+import { develop } from './config'
 
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||

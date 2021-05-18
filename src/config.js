@@ -1,4 +1,4 @@
-/* eslint-disable-next-line no-undef */
-const experimental = EXPERIMENTAL
-
-export const disabled = experimental ? {} : { extraBoost: true }
+/* global DEVELOP EXPERIMENTAL VERSION */
+export const develop = DEVELOP
+export const blackhole = VERSION
+export const disabled = EXPERIMENTAL ? {} : { extraBoost: true }

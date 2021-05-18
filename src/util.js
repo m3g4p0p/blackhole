@@ -1,4 +1,4 @@
-import { develop } from './game'
+import { develop } from './config'
 
 export function cap (value, min, max) {
   return Math.max(min, Math.min(max, value))

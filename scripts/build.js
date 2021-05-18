@@ -1,18 +1,34 @@
-const { prepare, urlsToCache } = require('./shared')
+const { build } = require('esbuild')
+const yargs = require('yargs')
+const { hideBin } = require('yargs/helpers')
+
+const {
+  define,
+  handleError,
+  prepare,
+  urlsToCache,
+  version
+} = require('./shared')
+
+const {
+  develop = false,
+  experimental = false,
+  watch = false
+} = yargs.parse(hideBin(process.argv))
 
 prepare().then(async () => {
-  return require('esbuild').build({
+  return build({
     entryPoints: ['src/game.js', 'src/sw.js'],
-    bundle: true,
     outdir: 'dist',
+    bundle: true,
     minify: true,
-    sourcemap: 'external',
-    watch: process.argv.includes('--watch'),
-    define: {
-      DEVELOP: JSON.stringify(false),
-      EXPERIMENTAL: JSON.stringify(process.argv.includes('--experimental')),
-      VERSION: JSON.stringify(require('../package.json').version),
-      URLS_TO_CACHE: JSON.stringify(await urlsToCache())
-    }
+    sourcemap: true,
+    watch,
+    ...define({
+      develop,
+      experimental,
+      version,
+      URLS_TO_CACHE: await urlsToCache()
+    })
   })
-}).catch(() => process.exit(1))
+}).catch(handleError)

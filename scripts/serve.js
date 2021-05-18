@@ -1,8 +1,9 @@
+const { serve } = require('esbuild')
 const ip = require('ip')
-const { prepare } = require('./shared')
+const { define, handleError, prepare, version } = require('./shared')
 
-prepare().then(async () => {
-  return require('esbuild').serve({
+prepare().then(async cleanDist => {
+  const server = await serve({
     port: 5500,
     servedir: 'dist'
   }, {
@@ -10,15 +11,18 @@ prepare().then(async () => {
     bundle: true,
     outdir: 'dist',
     sourcemap: 'inline',
-    define: {
-      DEVELOP: JSON.stringify(true),
-      EXPERIMENTAL: JSON.stringify(true),
-      VERSION: JSON.stringify(require('../package.json').version)
-    }
-  }).then(server => {
-    console.log(`Serving from http://${ip.address()}:${server.port}`)
+    ...define({
+      version,
+      DEVELOP: true,
+      EXPERIMENTAL: true
+    })
   })
-}).catch(error => {
-  console.error(error)
-  process.exit(1)
-})
+
+  console.log(`Serving from http://${ip.address()}:${server.port}`)
+
+  process.on('SIGINT', async () => {
+    server.stop()
+    // await cleanDist()
+    process.exit(1)
+  })
+}).catch(handleError)

@@ -4,9 +4,9 @@
   "scripts": {
     "serve": "node scripts/serve.js",
     "build": "node scripts/build.js",
-    "build:dev": "yarn build --experimental --watch",
+    "build:dev": "yarn build --experimental",
     "build:prod": "yarn build",
-    "deploy": "yarn version --patch --no-git-tag-version && yarn build:dev && gh-pages -d dist"
+    "deploy": "yarn build:dev && gh-pages -d dist"
   },
   "standard": {
     "env": {
@@ -31,7 +31,8 @@
     "gh-pages": "^3.1.0",
     "ip": "^1.1.5",
     "recursive-copy": "^2.0.11",
-    "standard": "^16.0.3"
+    "standard": "^16.0.3",
+    "yargs": "^17.0.1"
   },
   "dependencies": {
     "kaboom": "^0.5.0"
