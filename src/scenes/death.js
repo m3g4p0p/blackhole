@@ -1,5 +1,5 @@
-import { k, textLeft } from '../game.js'
-import { toggleMouseClass } from '../util.js'
+import { k, padding } from '../game'
+import { toggleMouseClass } from '../util'
 
 export default function deathScene (score, gotWrecked) {
   k.addMessage([
@@ -12,7 +12,7 @@ export default function deathScene (score, gotWrecked) {
         'You could not resist the force of gravity!'
       ]),
     `Your score was ${score}.`
-  ], textLeft, 200, 2)
+  ], padding, 200, 2)
 
   k.wait(3, () => k.go('start', score))
   toggleMouseClass(false)

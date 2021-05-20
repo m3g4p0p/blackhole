@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const cacheName = CACHE_NAME
+const cacheName = VERSION
 const urlsToCache = URLS_TO_CACHE
 /* eslint-enable no-undef */
 

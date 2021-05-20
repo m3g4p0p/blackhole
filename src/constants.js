@@ -14,6 +14,7 @@ export const SIZE = {
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },
   SHIELD: { X: 25, Y: 45 },
+  SAT: { X: 10, Y: 10 },
   STAR: { X: 5, Y: 5 },
   DEBRIS: {
     MIN: { X: 10, Y: 10 },
@@ -27,29 +28,39 @@ export const TIME = {
 }
 
 export const FACTOR = {
-  GRAVITY: 100,
-  SCORE: {
-    BOOST: 20,
-    DEBRIS: 50
-  }
+  GRAVITY: 100
 }
 
 export const SPIN = {
   BOOST: -1000,
-  DEBRIS: 500
+  DEBRIS: 500,
+  SAT: 200,
+  SPARK: -200
 }
 
 export const DECAY = {
   FLAME: 1000,
   FIRE: 500,
-  SCORE: 500,
+  INFO: 500,
+  SAT: 1000,
   SHIELD: 4000,
+  SPARK: 2000,
   TAIL: 200
+}
+
+export const SCORE = {
+  BOOST: 10,
+  DEBRIS: 50
 }
 
 export const SHAKE = {
   BOOST: 6,
   DEBRIS: 12
+}
+
+export const THRESH = {
+  SAT: 3,
+  INFO: 6
 }
 
 export const THROTTLE = {
