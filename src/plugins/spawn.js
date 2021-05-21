@@ -53,8 +53,8 @@ export default function spawnPlugin (k) {
   }
 
   function spawnFlame (ship, hasShield) {
-    const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
-    const direction = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
+    const offset = k.rotateVec([0, ship.height / 2], -ship.angle)
+    const direction = k.rotateVec([0, SIZE.FLAME.Y], -ship.angle).x
 
     return k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
@@ -135,15 +135,16 @@ export default function spawnPlugin (k) {
   }
 
   function spawnSpark (boost) {
-    const { r, g, b } = boost.color
-    const center = boost.pos
+    const { width, height, color, pos: center } = boost
+    const size = [width / 2, height / 2]
 
     return k.add([
-      k.rect(boost.width / 2, boost.height / 2),
-      k.color(r, g, b),
+      k.rect(...size),
+      k.color(color),
       k.pos(center),
       k.spin(SPIN.SPARK),
       k.decay(DECAY.SPARK),
+      k.orbit(boost, size, 4),
       'spark',
       { center }
     ])

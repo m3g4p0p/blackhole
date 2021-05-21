@@ -1,5 +1,9 @@
 export default function componentsPlugin (k) {
   function link (master, slave) {
+    if (!master.exists()) {
+      return
+    }
+
     master.on('destroy', () => {
       k.destroy(slave)
     })
@@ -48,7 +52,7 @@ export default function componentsPlugin (k) {
     }
   }
 
-  function orbit (object, distance) {
+  function orbit (object, distance, escape) {
     return {
       add () {
         this.use([
@@ -60,7 +64,12 @@ export default function componentsPlugin (k) {
       },
 
       update () {
-        const rotation = k.rotateVec(distance, distance, this.angle)
+        let rotation = k.rotateVec(distance, this.angle)
+
+        if (escape) {
+          rotation = rotation.scale(1 + escape - escape * this.decay)
+        }
+
         this.pos = object.pos.add(rotation)
       }
     }

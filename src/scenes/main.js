@@ -259,17 +259,17 @@ export default function gameScene (
     tail.scale = k.vec2(tail.decay, tail.decay)
   })
 
-  k.action('spark', spark => {
-    spark.color.a = spark.decay
-
-    spark.pos = spark.center.add(k
-      .rotateVec(SIZE.BOOST.X, SIZE.BOOST.Y, spark.angle)
-      .scale(2 - spark.decay)
-    )
-  })
-
   k.action('pulse', pulse => {
     pulse.scale = Math.cos(pulse.angle)
+  })
+
+  k.action('spark', spark => {
+    spark.color.a = spark.decay
+  })
+
+  k.action('fading', fading => {
+    fading.color.a = fading.decay
+    fading.scale = 1.2 - fading.decay / 5
   })
 
   k.action('debris', debris => {
@@ -290,11 +290,6 @@ export default function gameScene (
 
   k.action('shield', shield => {
     music.detune(DETUNE * shield.decay)
-  })
-
-  k.action('fading', fading => {
-    fading.color.a = fading.decay
-    fading.scale = 1.2 - fading.decay / 5
   })
 
   k.action('satellite', satellite => {
