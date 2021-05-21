@@ -156,15 +156,9 @@ export default function gameScene (
     }
   }
 
-  function die () {
-    music.stop()
-    k.play('gameover')
-    k.go('death', score.value, isWrecked)
-  }
-
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
-      return die()
+      return k.destroy(ship)
     }
 
     if (isWrecked) {
@@ -221,6 +215,12 @@ export default function gameScene (
     k.play('crash', { volume: 2 })
     k.destroy(debris)
     destroySatellites()
+  })
+
+  ship.on('destroy', () => {
+    music.stop()
+    k.play('gameover')
+    k.go('death', score.value, isWrecked)
   })
 
   k.collides('debris', 'satellite', (debris, satellite) => {

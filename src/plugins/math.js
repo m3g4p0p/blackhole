@@ -1,3 +1,6 @@
+/**
+ * @param {import('kaboom').KaboomCtx} k
+ */
 export default function mathPlugin (k) {
   function center () {
     return k.vec2(k.width() / 2, k.height() / 2)

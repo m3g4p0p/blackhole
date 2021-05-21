@@ -2,6 +2,9 @@ import { DECAY, SIZE, SPIN, THRESH } from '../constants'
 import { findMissing } from '../util'
 import { disabled } from '../config'
 
+/**
+ * @param {import('kaboom').KaboomCtx} k
+ */
 export default function spawnPlugin (k) {
   function spawnBoost (collected) {
     const extra = disabled.extraBoost
@@ -11,8 +14,8 @@ export default function spawnPlugin (k) {
     return k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
       k.pos(
-        k.rand(0, k.width() - SIZE.BOOST.X),
-        k.rand(0, k.height() - SIZE.BOOST.Y)
+        k.rand(SIZE.SHIP.X, k.width() - SIZE.SHIP.X),
+        k.rand(SIZE.SHIP.Y, k.height() - SIZE.SHIP.Y)
       ),
       k.color(0, 1, 0.5),
       k.spin(SPIN.BOOST / Math.sqrt(collected + 1)),
@@ -98,7 +101,7 @@ export default function spawnPlugin (k) {
       k.rect(1, k.height()),
       k.color(r, g, b, 0.5),
       k.scale(0),
-      k.sync(boost),
+      k.sync(boost, true),
       'pulse'
     ])
   }

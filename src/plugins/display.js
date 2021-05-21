@@ -10,6 +10,9 @@ function join (lines, spacing = 1) {
   return lines.join('\n'.repeat(spacing + 1))
 }
 
+/**
+ * @param {import('kaboom').KaboomCtx} k
+ */
 export default function displayPlugin (k) {
   function addGUI (components, x, y, s = 1) {
     return k.add([

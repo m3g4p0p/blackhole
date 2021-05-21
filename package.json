@@ -1,6 +1,6 @@
 {
   "name": "blackhole",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "scripts": {
     "serve": "node scripts/serve.js",
     "build": "node scripts/build.js",

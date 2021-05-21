@@ -1,3 +1,6 @@
+/**
+ * @param {import('kaboom').KaboomCtx} k
+ */
 export default function componentsPlugin (k) {
   function link (master, slave) {
     if (!master.exists()) {
@@ -45,8 +48,7 @@ export default function componentsPlugin (k) {
       },
 
       update () {
-        this.delta.x = this.pos.x - lastPos.x
-        this.delta.y = this.pos.y - lastPos.y
+        this.delta = this.pos.sub(lastPos)
         Object.assign(lastPos, this.pos)
       }
     }
@@ -59,8 +61,6 @@ export default function componentsPlugin (k) {
           k.pos(object.pos),
           k.origin(object.origin)
         ])
-
-        link(object, this)
       },
 
       update () {
@@ -90,7 +90,7 @@ export default function componentsPlugin (k) {
     }
   }
 
-  function sync (object) {
+  function sync (object, linked) {
     return {
       add () {
         this.use([
@@ -99,7 +99,9 @@ export default function componentsPlugin (k) {
           k.origin(object.origin)
         ])
 
-        link(object, this)
+        if (linked) {
+          link(object, this)
+        }
       },
 
       update () {
