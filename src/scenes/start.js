@@ -17,6 +17,32 @@ function toggleDisabled (control, disabled) {
   control.color.a = disabled ? 0.5 : 1
 }
 
+function initReleaseListener () {
+  const listeners = new Map()
+
+  k.mouseRelease(() => {
+    const pos = k.mousePos()
+
+    k.every('control', control => {
+      if (listeners.has(control) && control.hasPt(pos)) {
+        listeners.get(control)(control)
+      }
+    })
+  })
+
+  k.sceneData().listeners = listeners
+}
+
+function onRelease (handler) {
+  const { listeners } = k.sceneData()
+
+  return {
+    add () {
+      listeners.set(this, handler)
+    }
+  }
+}
+
 function initInstallButton () {
   let promptText = null
 
@@ -32,19 +58,18 @@ function initInstallButton () {
     promptText = k.addGUI([
       k.text('install'),
       k.origin('bot'),
+      onRelease(() => {
+        deferredPrompt.prompt()
+
+        deferredPrompt.userChoice.then(({ outcome }) => {
+          if (outcome === 'accepted') {
+            k.destroy(promptText)
+            deferredPrompt = null
+          }
+        })
+      }),
       'control'
     ], 0.5, -padding)
-
-    promptText.clicks(() => {
-      deferredPrompt.prompt()
-
-      deferredPrompt.userChoice.then(({ outcome }) => {
-        if (outcome === 'accepted') {
-          k.destroy(promptText)
-          deferredPrompt = null
-        }
-      })
-    })
   })
 }
 
@@ -74,24 +99,22 @@ function initEffectControls () {
   const sound = k.addGUI([
     k.text('sound', 16),
     k.origin('topleft'),
+    onRelease(() => {
+      const volume = k.volume((k.volume() + 1) % 2)
+      toggleDisabled(sound, volume === 0)
+    }),
     'control'
   ], padding, 100)
 
   const vibration = k.addGUI([
     k.text('shake', 16),
     k.origin('topright'),
+    onRelease(() => {
+      vibrationEnabled = !vibrationEnabled
+      toggleDisabled(vibration, !vibrationEnabled)
+    }),
     'control'
   ], -padding, 100)
-
-  sound.clicks(() => {
-    const volume = k.volume((k.volume() + 1) % 2)
-    toggleDisabled(sound, volume === 0)
-  })
-
-  vibration.clicks(() => {
-    vibrationEnabled = !vibrationEnabled
-    toggleDisabled(vibration, !vibrationEnabled)
-  })
 
   toggleDisabled(sound, k.volume() === 0)
   toggleDisabled(vibration, !vibrationEnabled)
@@ -144,35 +167,38 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('+', 32),
       k.origin('topright'),
+      onRelease(() => {
+        setDifficulty(difficulty + 1)
+      }),
       'control',
       'difficulty+'
-    ], -padding, padding).clicks(() => {
-      setDifficulty(difficulty + 1)
-    })
+    ], -padding, padding)
 
     k.addGUI([
       k.text('-', 32),
       k.origin('topleft'),
+      onRelease(() => {
+        setDifficulty(difficulty - 1)
+      }),
       'control',
       'difficulty-'
-    ], padding, padding).clicks(() => {
-      setDifficulty(difficulty - 1)
-    })
+    ], padding, padding)
 
     k.addGUI([
       k.text('START', 32),
       k.origin('top'),
-      'control'
-    ], 0.5, padding).clicks(() => {
-      k.addCountdown(3, () => {
-        k.go('main', difficulty, true, vibrationEnabled)
-      })
+      onRelease(() => {
+        k.addCountdown(3, () => {
+          k.go('main', difficulty, true, vibrationEnabled)
+        })
 
-      k.destroy(info)
-      k.destroyAll('control')
-      k.destroyAll('instructions')
-      requestFullscreen()
-    })
+        k.destroy(info)
+        k.destroyAll('control')
+        k.destroyAll('instructions')
+        requestFullscreen()
+      }),
+      'control'
+    ], 0.5, padding)
   }
 
   function initDesktopControls () {
@@ -196,6 +222,7 @@ export default function startScene (score = 0) {
   }
 
   if (isMobile) {
+    initReleaseListener()
     initMobileControls()
     initInstallButton()
     initInstructions()
