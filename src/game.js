@@ -1,6 +1,7 @@
 import kaboom from 'kaboom'
 import componentsPlugin from './plugins/components'
 import displayPlugin from './plugins/display'
+import eventsPlugin from './plugins/events'
 import mathPlugin from './plugins/math'
 import spawnPlugin from './plugins/spawn'
 import startScene from './scenes/start'
@@ -23,6 +24,7 @@ export const k = window.k = kaboom({
   plugins: [
     componentsPlugin,
     displayPlugin,
+    eventsPlugin,
     mathPlugin,
     spawnPlugin
   ],

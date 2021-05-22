@@ -17,32 +17,6 @@ function toggleDisabled (control, disabled) {
   control.color.a = disabled ? 0.5 : 1
 }
 
-function initReleaseListener () {
-  const listeners = new Map()
-
-  k.mouseRelease(() => {
-    const pos = k.mousePos()
-
-    k.every('control', control => {
-      if (listeners.has(control) && control.hasPt(pos)) {
-        listeners.get(control)(control)
-      }
-    })
-  })
-
-  k.sceneData().listeners = listeners
-}
-
-function onRelease (handler) {
-  const { listeners } = k.sceneData()
-
-  return {
-    add () {
-      listeners.set(this, handler)
-    }
-  }
-}
-
 function initInstallButton () {
   let promptText = null
 
@@ -58,7 +32,7 @@ function initInstallButton () {
     promptText = k.addGUI([
       k.text('install'),
       k.origin('bot'),
-      onRelease(() => {
+      k.onRelease(() => {
         deferredPrompt.prompt()
 
         deferredPrompt.userChoice.then(({ outcome }) => {
@@ -99,7 +73,7 @@ function initEffectControls () {
   const sound = k.addGUI([
     k.text('sound', 16),
     k.origin('topleft'),
-    onRelease(() => {
+    k.onRelease(() => {
       const volume = k.volume((k.volume() + 1) % 2)
       toggleDisabled(sound, volume === 0)
     }),
@@ -109,7 +83,7 @@ function initEffectControls () {
   const vibration = k.addGUI([
     k.text('shake', 16),
     k.origin('topright'),
-    onRelease(() => {
+    k.onRelease(() => {
       vibrationEnabled = !vibrationEnabled
       toggleDisabled(vibration, !vibrationEnabled)
     }),
@@ -167,7 +141,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('+', 32),
       k.origin('topright'),
-      onRelease(() => {
+      k.onRelease(() => {
         setDifficulty(difficulty + 1)
       }),
       'control',
@@ -177,7 +151,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('-', 32),
       k.origin('topleft'),
-      onRelease(() => {
+      k.onRelease(() => {
         setDifficulty(difficulty - 1)
       }),
       'control',
@@ -187,7 +161,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('START', 32),
       k.origin('top'),
-      onRelease(() => {
+      k.onRelease(() => {
         k.addCountdown(3, () => {
           k.go('main', difficulty, true, vibrationEnabled)
         })
@@ -212,23 +186,24 @@ export default function startScene (score = 0) {
     })
   }
 
-  if (blackhole) {
-    k.addGUI([
-      k.text(blackhole),
-      k.origin('botright')
-    ], -padding, -padding).clicks(() => {
-      k.go('credits')
-    })
-  }
-
   if (isMobile) {
-    initReleaseListener()
     initMobileControls()
     initInstallButton()
     initInstructions()
     initEffectControls()
   } else {
     initDesktopControls()
+  }
+
+  if (blackhole) {
+    k.addGUI([
+      k.text(blackhole),
+      k.origin('botright'),
+      k.onRelease(() => {
+        k.go('credits')
+      }),
+      'control'
+    ], -padding, -padding)
   }
 
   k.every('control', control => {
