@@ -37,7 +37,13 @@ function initInstallButton () {
 
     promptText.clicks(() => {
       deferredPrompt.prompt()
-      deferredPrompt = null
+
+      deferredPrompt.userChoice.then(({ outcome }) => {
+        if (outcome === 'accepted') {
+          k.destroy(promptText)
+          deferredPrompt = null
+        }
+      })
     })
   })
 }

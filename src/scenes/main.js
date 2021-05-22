@@ -278,11 +278,11 @@ export default function gameScene (
     }
 
     debris.move(
-      debris.direction *
-      MOVE.DEBRIS.X,
-      -MOVE.DEBRIS.Y /
+      MOVE.DEBRIS.X *
+      debris.direction,
+      MOVE.DEBRIS.Y /
       difficulty -
-      debris.area.p1.dist(debris.area.p2)
+      k.diagonal(debris.area)
     )
 
     k.spawnTail(debris)

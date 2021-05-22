@@ -5,7 +5,7 @@ export const DIFFICULTY = {
 
 export const MOVE = {
   SHIP: { X: 100, Y: 10 },
-  DEBRIS: { X: 100, Y: 100 }
+  DEBRIS: { X: 100, Y: -100 }
 }
 
 export const SIZE = {

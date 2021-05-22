@@ -6,6 +6,10 @@ export default function mathPlugin (k) {
     return k.vec2(k.width() / 2, k.height() / 2)
   }
 
+  function diagonal ({ p1, p2 }) {
+    return p1.dist(p2)
+  }
+
   function rotateVec (vec, angle) {
     const { x, y } = k.vec2(vec)
 
@@ -15,5 +19,5 @@ export default function mathPlugin (k) {
     )
   }
 
-  return { center, rotateVec }
+  return { center, diagonal, rotateVec }
 }
