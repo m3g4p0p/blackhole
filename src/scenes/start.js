@@ -217,7 +217,7 @@ export default function startScene (score = 0) {
       k.text(blackhole),
       k.origin('botright')
     ], -padding, -padding).clicks(() => {
-      window.location.assign('about.html')
+      k.go('credits')
     })
   }
 

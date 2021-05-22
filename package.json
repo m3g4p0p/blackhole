@@ -1,6 +1,10 @@
 {
   "name": "blackhole",
   "version": "0.1.30",
+  "license": "GPL",
+  "author": {
+    "name": "m3g4p0p"
+  },
   "scripts": {
     "serve": "node scripts/serve.js",
     "build": "node scripts/build.js",
