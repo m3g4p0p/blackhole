@@ -32,7 +32,7 @@ function initInstallButton () {
     promptText = k.addGUI([
       k.text('install'),
       k.origin('bot'),
-      k.onRelease(() => {
+      k.touches(() => {
         deferredPrompt.prompt()
 
         deferredPrompt.userChoice.then(({ outcome }) => {
@@ -73,7 +73,7 @@ function initEffectControls () {
   const sound = k.addGUI([
     k.text('sound', 16),
     k.origin('topleft'),
-    k.onRelease(() => {
+    k.touches(() => {
       const volume = k.volume((k.volume() + 1) % 2)
       toggleDisabled(sound, volume === 0)
     }),
@@ -83,7 +83,7 @@ function initEffectControls () {
   const vibration = k.addGUI([
     k.text('shake', 16),
     k.origin('topright'),
-    k.onRelease(() => {
+    k.touches(() => {
       vibrationEnabled = !vibrationEnabled
       toggleDisabled(vibration, !vibrationEnabled)
     }),
@@ -141,7 +141,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('+', 32),
       k.origin('topright'),
-      k.onRelease(() => {
+      k.touches(() => {
         setDifficulty(difficulty + 1)
       }),
       'control',
@@ -151,7 +151,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('-', 32),
       k.origin('topleft'),
-      k.onRelease(() => {
+      k.touches(() => {
         setDifficulty(difficulty - 1)
       }),
       'control',
@@ -161,7 +161,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('START', 32),
       k.origin('top'),
-      k.onRelease(() => {
+      k.touches(() => {
         k.addCountdown(3, () => {
           k.go('main', difficulty, true, vibrationEnabled)
         })
@@ -178,7 +178,8 @@ export default function startScene (score = 0) {
   function initDesktopControls () {
     k.addMessage([
       'Press SPACE to start falling!',
-      'Use UP and DOWN to adjust the difficulty.'
+      'Use UP and DOWN to adjust the difficulty.',
+      'Better played on your phone though.'
     ], padding, 300, 2)
 
     k.mouseClick(() => {
@@ -199,7 +200,7 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text(blackhole),
       k.origin('botright'),
-      k.onRelease(() => {
+      k.touches(() => {
         k.go('credits')
       }),
       'control'
