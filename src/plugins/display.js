@@ -21,6 +21,7 @@ export default function displayPlugin (k) {
         calcPos(y, k.height())
       ),
       k.color(s, s, s),
+      k.layer('gui'),
       ...components
     ])
   }

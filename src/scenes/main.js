@@ -32,27 +32,24 @@ export default function gameScene (
   music.loop()
 
   k.layers([
-    'info',
+    'gui',
     'background',
     'game'
   ], 'game')
 
   k.addGUI([
     k.text('G'),
-    k.origin('botright'),
-    k.layer('info')
+    k.origin('botright')
   ], -10, -10, 0.5)
 
   const score = k.addGUI([
     k.text(),
-    k.layer('info'),
     { value: 0 }
   ], 10, 10)
 
   const gravity = k.addGUI([
     k.rect(10, 0),
     k.origin('botright'),
-    k.layer('info'),
     { value: INITIAL_GRAVITY }
   ], -10, -25, 0.5)
 
@@ -331,7 +328,7 @@ export default function gameScene (
   })
 
   k.gravity(INITIAL_GRAVITY)
-  k.camIgnore(['info'])
+  k.camIgnore(['gui'])
 
   k.loop(1 / difficulty, () => {
     addScore(1)

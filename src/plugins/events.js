@@ -9,16 +9,22 @@ export default function eventsPlugin (k) {
     return {
       add () {
         k.mouseDown(() => {
-          if (skip || done) {
+          if (!this.layer && skip) {
             skip = false
+            done = false
             return
           }
 
           if (this.isHovered()) {
-            callback.call(this)
-          }
+            if (done) {
+              return
+            }
 
-          done = once
+            callback.call(this)
+            done = once
+          } else {
+            done = false
+          }
         })
 
         k.mouseRelease(() => {

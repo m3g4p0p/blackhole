@@ -187,6 +187,9 @@ export default function startScene (score = 0) {
     })
   }
 
+  k.layers(['gui'])
+  k.camIgnore(['gui'])
+
   if (isMobile) {
     initMobileControls()
     initInstallButton()
