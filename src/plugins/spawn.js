@@ -44,9 +44,9 @@ export default function spawnPlugin (k) {
 
   function spawnFire (ship) {
     return k.add([
-      k.rect(ship.width, ship.width),
+      k.rect(ship.width, ship.height),
       k.pos(ship.pos.x, ship.pos.y),
-      k.rotate(0),
+      k.rotate(ship.angle),
       k.color(1, 0, 0),
       k.layer('background'),
       k.origin('center'),

@@ -90,7 +90,7 @@ export default function componentsPlugin (k) {
     }
   }
 
-  function sync (object, linked) {
+  function sync (object, linked = false) {
     return {
       add () {
         this.use([

@@ -247,6 +247,7 @@ export default function gameScene (
 
     fire.color = k.rgba(heat, k.rand(0, heat / 2), 0, fire.decay)
     fire.angle += k.dt()
+    fire.scale = heat
   })
 
   k.action('tail', tail => {
@@ -377,4 +378,10 @@ export default function gameScene (
       collected = i
     })
   }
+
+  k.keyPress('k', () => {
+    isWrecked = true
+    ship.jump(INITIAL_GRAVITY)
+    ship.use(k.spin(SPIN.DEBRIS))
+  })
 }
