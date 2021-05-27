@@ -28,6 +28,7 @@ export default function gameScene (
   let isWrecked = false
   let hasShield = false
   let collected = 0
+  let smashed = 0
 
   music.loop()
 
@@ -94,12 +95,13 @@ export default function gameScene (
   }
 
   function smashDebris (debris) {
+    smashed++
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
 
     k.play('crash')
     debris.use(k.layer('background'))
-    addScore(SCORE.DEBRIS, true, debris.pos)
+    addScore(SCORE.DEBRIS * smashed, true, debris.pos)
   }
 
   function followMouse () {
@@ -272,6 +274,7 @@ export default function gameScene (
 
   k.action('debris', debris => {
     if (debris.pos.y > k.height() + debris.height) {
+      smashed = 0
       return k.destroy(debris)
     }
 
