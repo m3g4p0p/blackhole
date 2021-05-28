@@ -1,11 +1,13 @@
 import kaboom from 'kaboom'
 import componentsPlugin from './plugins/components'
 import displayPlugin from './plugins/display'
+import eventsPlugin from './plugins/events'
 import mathPlugin from './plugins/math'
 import spawnPlugin from './plugins/spawn'
 import startScene from './scenes/start'
 import mainScene from './scenes/main'
 import deathScene from './scenes/death'
+import creditsScene from './scenes/credits'
 import { SIZE } from './constants'
 import { develop } from './config'
 
@@ -22,6 +24,7 @@ export const k = window.k = kaboom({
   plugins: [
     componentsPlugin,
     displayPlugin,
+    eventsPlugin,
     mathPlugin,
     spawnPlugin
   ],
@@ -38,6 +41,7 @@ k.loadSound('crash', 'media/crash.mp3')
 k.scene('start', startScene)
 k.scene('main', mainScene)
 k.scene('death', deathScene)
+k.scene('credits', creditsScene)
 k.start('start')
 
 document.body.classList.toggle('is-fullscreen', isMobile)

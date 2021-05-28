@@ -23,9 +23,14 @@ async function prepare (src, dist) {
   await fs.rmdir(dist, { recursive: true })
   await fs.mkdir(dist)
 
-  await copy(src, dist, {
+  const results = await copy(src, dist, {
     filter: filename => !filename.endsWith('.js')
   })
+
+  await Promise.allSettled(results
+    .filter(({ stats }) => stats.isDirectory())
+    .map(({ dest }) => fs.rmdir(dest))
+  )
 
   return path.resolve(dist)
 }

@@ -32,13 +32,18 @@ function initInstallButton () {
     promptText = k.addGUI([
       k.text('install'),
       k.origin('bot'),
+      k.touches(() => {
+        deferredPrompt.prompt()
+
+        deferredPrompt.userChoice.then(({ outcome }) => {
+          if (outcome === 'accepted') {
+            k.destroy(promptText)
+            deferredPrompt = null
+          }
+        })
+      }),
       'control'
     ], 0.5, -padding)
-
-    promptText.clicks(() => {
-      deferredPrompt.prompt()
-      deferredPrompt = null
-    })
   })
 }
 
@@ -68,24 +73,22 @@ function initEffectControls () {
   const sound = k.addGUI([
     k.text('sound', 16),
     k.origin('topleft'),
+    k.touches(() => {
+      const volume = k.volume((k.volume() + 1) % 2)
+      toggleDisabled(sound, volume === 0)
+    }),
     'control'
   ], padding, 100)
 
   const vibration = k.addGUI([
     k.text('shake', 16),
     k.origin('topright'),
+    k.touches(() => {
+      vibrationEnabled = !vibrationEnabled
+      toggleDisabled(vibration, !vibrationEnabled)
+    }),
     'control'
   ], -padding, 100)
-
-  sound.clicks(() => {
-    const volume = k.volume((k.volume() + 1) % 2)
-    toggleDisabled(sound, volume === 0)
-  })
-
-  vibration.clicks(() => {
-    vibrationEnabled = !vibrationEnabled
-    toggleDisabled(vibration, !vibrationEnabled)
-  })
 
   toggleDisabled(sound, k.volume() === 0)
   toggleDisabled(vibration, !vibrationEnabled)
@@ -138,41 +141,45 @@ export default function startScene (score = 0) {
     k.addGUI([
       k.text('+', 32),
       k.origin('topright'),
+      k.touches(() => {
+        setDifficulty(difficulty + 1)
+      }),
       'control',
       'difficulty+'
-    ], -padding, padding).clicks(() => {
-      setDifficulty(difficulty + 1)
-    })
+    ], -padding, padding)
 
     k.addGUI([
       k.text('-', 32),
       k.origin('topleft'),
+      k.touches(() => {
+        setDifficulty(difficulty - 1)
+      }),
       'control',
       'difficulty-'
-    ], padding, padding).clicks(() => {
-      setDifficulty(difficulty - 1)
-    })
+    ], padding, padding)
 
     k.addGUI([
       k.text('START', 32),
       k.origin('top'),
-      'control'
-    ], 0.5, padding).clicks(() => {
-      k.addCountdown(3, () => {
-        k.go('main', difficulty, true, vibrationEnabled)
-      })
+      k.touches(() => {
+        k.addCountdown(3, () => {
+          k.go('main', difficulty, true, vibrationEnabled)
+        })
 
-      k.destroy(info)
-      k.destroyAll('control')
-      k.destroyAll('instructions')
-      requestFullscreen()
-    })
+        k.destroy(info)
+        k.destroyAll('control')
+        k.destroyAll('instructions')
+        requestFullscreen()
+      }),
+      'control'
+    ], 0.5, padding)
   }
 
   function initDesktopControls () {
     k.addMessage([
       'Press SPACE to start falling!',
-      'Use UP and DOWN to adjust the difficulty.'
+      'Use UP and DOWN to adjust the difficulty.',
+      'Better played on your phone though.'
     ], padding, 300, 2)
 
     k.mouseClick(() => {
@@ -180,14 +187,8 @@ export default function startScene (score = 0) {
     })
   }
 
-  if (blackhole) {
-    k.addGUI([
-      k.text(blackhole),
-      k.origin('botright')
-    ], -padding, -padding).clicks(() => {
-      window.location.assign('about.html')
-    })
-  }
+  k.layers(['gui'])
+  k.camIgnore(['gui'])
 
   if (isMobile) {
     initMobileControls()
@@ -196,6 +197,17 @@ export default function startScene (score = 0) {
     initEffectControls()
   } else {
     initDesktopControls()
+  }
+
+  if (blackhole) {
+    k.addGUI([
+      k.text(blackhole),
+      k.origin('botright'),
+      k.touches(() => {
+        k.go('credits')
+      }),
+      'control'
+    ], -padding, -padding)
   }
 
   k.every('control', control => {

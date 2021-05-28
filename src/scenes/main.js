@@ -28,31 +28,29 @@ export default function gameScene (
   let isWrecked = false
   let hasShield = false
   let collected = 0
+  let smashed = 0
 
   music.loop()
 
   k.layers([
-    'info',
+    'gui',
     'background',
     'game'
   ], 'game')
 
   k.addGUI([
     k.text('G'),
-    k.origin('botright'),
-    k.layer('info')
+    k.origin('botright')
   ], -10, -10, 0.5)
 
   const score = k.addGUI([
     k.text(),
-    k.layer('info'),
     { value: 0 }
   ], 10, 10)
 
   const gravity = k.addGUI([
     k.rect(10, 0),
     k.origin('botright'),
-    k.layer('info'),
     { value: INITIAL_GRAVITY }
   ], -10, -25, 0.5)
 
@@ -97,12 +95,13 @@ export default function gameScene (
   }
 
   function smashDebris (debris) {
+    smashed++
     debris.color = k.rgba(1, 0.5, 0)
     debris.direction = debris.direction * -2
 
     k.play('crash')
     debris.use(k.layer('background'))
-    addScore(SCORE.DEBRIS, true, debris.pos)
+    addScore(SCORE.DEBRIS * smashed, true, debris.pos)
   }
 
   function followMouse () {
@@ -156,15 +155,9 @@ export default function gameScene (
     }
   }
 
-  function die () {
-    music.stop()
-    k.play('gameover')
-    k.go('death', score.value, isWrecked)
-  }
-
   ship.action(() => {
     if (ship.pos.y >= k.height()) {
-      return die()
+      return k.destroy(ship)
     }
 
     if (isWrecked) {
@@ -223,6 +216,12 @@ export default function gameScene (
     destroySatellites()
   })
 
+  ship.on('destroy', () => {
+    music.stop()
+    k.play('gameover')
+    k.go('death', score.value, isWrecked)
+  })
+
   k.collides('debris', 'satellite', (debris, satellite) => {
     smashDebris(debris)
     k.destroy(satellite)
@@ -250,6 +249,7 @@ export default function gameScene (
 
     fire.color = k.rgba(heat, k.rand(0, heat / 2), 0, fire.decay)
     fire.angle += k.dt()
+    fire.scale = heat
   })
 
   k.action('tail', tail => {
@@ -259,30 +259,31 @@ export default function gameScene (
     tail.scale = k.vec2(tail.decay, tail.decay)
   })
 
-  k.action('spark', spark => {
-    spark.color.a = spark.decay
-
-    spark.pos = spark.center.add(k
-      .rotateVec(SIZE.BOOST.X, SIZE.BOOST.Y, spark.angle)
-      .scale(2 - spark.decay)
-    )
-  })
-
   k.action('pulse', pulse => {
     pulse.scale = Math.cos(pulse.angle)
   })
 
+  k.action('spark', spark => {
+    spark.color.a = spark.decay
+  })
+
+  k.action('fading', fading => {
+    fading.color.a = fading.decay
+    fading.scale = 1.2 - fading.decay / 5
+  })
+
   k.action('debris', debris => {
     if (debris.pos.y > k.height() + debris.height) {
+      smashed = 0
       return k.destroy(debris)
     }
 
     debris.move(
-      debris.direction *
-      MOVE.DEBRIS.X,
-      -MOVE.DEBRIS.Y /
+      MOVE.DEBRIS.X *
+      debris.direction,
+      MOVE.DEBRIS.Y /
       difficulty -
-      debris.area.p1.dist(debris.area.p2)
+      k.diagonal(debris.area)
     )
 
     k.spawnTail(debris)
@@ -290,11 +291,6 @@ export default function gameScene (
 
   k.action('shield', shield => {
     music.detune(DETUNE * shield.decay)
-  })
-
-  k.action('fading', fading => {
-    fading.color.a = fading.decay
-    fading.scale = 1.2 - fading.decay / 5
   })
 
   k.action('satellite', satellite => {
@@ -336,7 +332,7 @@ export default function gameScene (
   })
 
   k.gravity(INITIAL_GRAVITY)
-  k.camIgnore(['info'])
+  k.camIgnore(['gui'])
 
   k.loop(1 / difficulty, () => {
     addScore(1)
@@ -385,4 +381,10 @@ export default function gameScene (
       collected = i
     })
   }
+
+  k.keyPress('k', () => {
+    isWrecked = true
+    ship.jump(INITIAL_GRAVITY)
+    ship.use(k.spin(SPIN.DEBRIS))
+  })
 }

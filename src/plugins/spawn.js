@@ -2,6 +2,9 @@ import { DECAY, SIZE, SPIN, THRESH } from '../constants'
 import { findMissing } from '../util'
 import { disabled } from '../config'
 
+/**
+ * @param {import('kaboom').KaboomCtx} k
+ */
 export default function spawnPlugin (k) {
   function spawnBoost (collected) {
     const extra = disabled.extraBoost
@@ -11,8 +14,8 @@ export default function spawnPlugin (k) {
     return k.add([
       k.rect(SIZE.BOOST.X, SIZE.BOOST.Y),
       k.pos(
-        k.rand(0, k.width() - SIZE.BOOST.X),
-        k.rand(0, k.height() - SIZE.BOOST.Y)
+        k.rand(SIZE.SHIP.X, k.width() - SIZE.SHIP.X),
+        k.rand(SIZE.SHIP.Y, k.height() - SIZE.SHIP.Y)
       ),
       k.color(0, 1, 0.5),
       k.spin(SPIN.BOOST / Math.sqrt(collected + 1)),
@@ -41,9 +44,9 @@ export default function spawnPlugin (k) {
 
   function spawnFire (ship) {
     return k.add([
-      k.rect(ship.width, ship.width),
+      k.rect(ship.width, ship.height),
       k.pos(ship.pos.x, ship.pos.y),
-      k.rotate(0),
+      k.rotate(ship.angle),
       k.color(1, 0, 0),
       k.layer('background'),
       k.origin('center'),
@@ -53,8 +56,8 @@ export default function spawnPlugin (k) {
   }
 
   function spawnFlame (ship, hasShield) {
-    const offset = k.rotateVec(0, ship.height / 2, -ship.angle)
-    const direction = k.rotateVec(0, SIZE.FLAME.Y, -ship.angle).x
+    const offset = k.rotateVec([0, ship.height / 2], -ship.angle)
+    const direction = k.rotateVec([0, SIZE.FLAME.Y], -ship.angle).x
 
     return k.add([
       k.rect(SIZE.FLAME.X, SIZE.FLAME.Y),
@@ -98,7 +101,7 @@ export default function spawnPlugin (k) {
       k.rect(1, k.height()),
       k.color(r, g, b, 0.5),
       k.scale(0),
-      k.sync(boost),
+      k.sync(boost, true),
       'pulse'
     ])
   }
@@ -135,15 +138,16 @@ export default function spawnPlugin (k) {
   }
 
   function spawnSpark (boost) {
-    const { r, g, b } = boost.color
-    const center = boost.pos
+    const { width, height, color, pos: center } = boost
+    const size = [width / 2, height / 2]
 
     return k.add([
-      k.rect(boost.width / 2, boost.height / 2),
-      k.color(r, g, b),
+      k.rect(...size),
+      k.color(color),
       k.pos(center),
       k.spin(SPIN.SPARK),
       k.decay(DECAY.SPARK),
+      k.orbit(boost, size, 4),
       'spark',
       { center }
     ])

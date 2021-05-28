@@ -1,5 +1,12 @@
+/**
+ * @param {import('kaboom').KaboomCtx} k
+ */
 export default function componentsPlugin (k) {
   function link (master, slave) {
+    if (!master.exists()) {
+      return
+    }
+
     master.on('destroy', () => {
       k.destroy(slave)
     })
@@ -41,26 +48,28 @@ export default function componentsPlugin (k) {
       },
 
       update () {
-        this.delta.x = this.pos.x - lastPos.x
-        this.delta.y = this.pos.y - lastPos.y
+        this.delta = this.pos.sub(lastPos)
         Object.assign(lastPos, this.pos)
       }
     }
   }
 
-  function orbit (object, distance) {
+  function orbit (object, distance, escape) {
     return {
       add () {
         this.use([
           k.pos(object.pos),
           k.origin(object.origin)
         ])
-
-        link(object, this)
       },
 
       update () {
-        const rotation = k.rotateVec(distance, distance, this.angle)
+        let rotation = k.rotateVec(distance, this.angle)
+
+        if (escape) {
+          rotation = rotation.scale(1 + escape - escape * this.decay)
+        }
+
         this.pos = object.pos.add(rotation)
       }
     }
@@ -81,7 +90,7 @@ export default function componentsPlugin (k) {
     }
   }
 
-  function sync (object) {
+  function sync (object, linked = false) {
     return {
       add () {
         this.use([
@@ -90,7 +99,9 @@ export default function componentsPlugin (k) {
           k.origin(object.origin)
         ])
 
-        link(object, this)
+        if (linked) {
+          link(object, this)
+        }
       },
 
       update () {
