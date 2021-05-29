@@ -17,7 +17,8 @@ const {
   serve = false,
   watch = serve,
   develop = watch,
-  experimental = develop
+  experimental = develop,
+  endpoint = null
 } = yargs.parse(hideBin(process.argv))
 
 prepare('src', 'dist').then(async root => {
@@ -30,6 +31,7 @@ prepare('src', 'dist').then(async root => {
     watch,
     ...define({
       develop,
+      endpoint,
       experimental,
       version,
       URLS_TO_CACHE: develop ? [] : await urlsToCache(root)

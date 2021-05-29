@@ -1,10 +1,16 @@
-import { DIFFICULTY } from '../constants'
-import { blackhole } from '../config'
+import { DIFFICULTY, MAX_SCORES } from '../constants'
+import { blackhole, develop } from '../config'
 import { k, isMobile, padding } from '../game'
-import { cap, requestFullscreen, getHighscore } from '../util'
+
+import {
+  cap,
+  requestFullscreen,
+  getLocalHighscore,
+  fetchHighscores
+} from '../util'
 
 let difficulty = DIFFICULTY.MIN
-let highscore = getHighscore()
+let highscore = getLocalHighscore()
 let deferredPrompt = null
 let vibrationEnabled = true
 
@@ -111,6 +117,19 @@ function addPadding () {
   ])
 }
 
+function loadHighscores () {
+  fetchHighscores()
+    .then(data => data
+      .slice(0, MAX_SCORES)
+      .forEach(({ name, score }, index) => {
+        k.addGUI([
+          k.text(`${name.padEnd(10, ' ')} ${score}`),
+          'highscore'
+        ], padding, 360 + index * 32)
+      }))
+    .catch(develop ? console.error : console.debug)
+}
+
 export default function startScene (score = 0) {
   const info = k.addMessage([], padding, 200, 1, 12)
 
@@ -119,8 +138,8 @@ export default function startScene (score = 0) {
 
   function updateInfo () {
     info.setText([
-      `Difficulty: ${difficulty}`,
-      `Highscore: ${highscore}`
+      `Difficulty:     ${difficulty}`,
+      `Your highscore: ${highscore}`
     ])
 
     k.every('difficulty+', control => {
@@ -169,6 +188,7 @@ export default function startScene (score = 0) {
         k.destroy(info)
         k.destroyAll('control')
         k.destroyAll('instructions')
+        k.destroyAll('highscore')
         requestFullscreen()
       }),
       'control'
@@ -231,4 +251,5 @@ export default function startScene (score = 0) {
 
   updateInfo()
   addPadding()
+  loadHighscores()
 }

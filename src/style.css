@@ -2,11 +2,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
   height: 100vh;
   margin: 0;
   color: white;
   background-color: black;
   font-family: 'Courier New', Courier, monospace;
+}
+
+form {
+  position: absolute;
+  right: 100vw;
+  bottom: 100vh;
 }
 
 canvas {

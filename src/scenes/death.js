@@ -1,7 +1,12 @@
+import { MAX_SCORES } from '../constants'
 import { k, padding } from '../game'
-import { toggleMouseClass } from '../util'
+import { toggleMouseClass, fetchHighscores } from '../util'
 
 export default function deathScene (score, gotWrecked) {
+  function next (scene) {
+    k.wait(3, () => k.go(scene, score))
+  }
+
   k.addMessage([
     gotWrecked
       ? 'Wrecked by space debris!'
@@ -14,6 +19,16 @@ export default function deathScene (score, gotWrecked) {
     `Your score was ${score}.`
   ], padding, 200, 2)
 
-  k.wait(3, () => k.go('start', score))
+  fetchHighscores().then(data => {
+    if (
+      data.length < MAX_SCORES ||
+      score > data.pop().score
+    ) {
+      return next('highscore')
+    }
+
+    next('start', score)
+  }).catch(() => next('start', score))
+
   toggleMouseClass(false)
 }

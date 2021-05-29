@@ -72,3 +72,4 @@ export const STARS = 10
 export const CAM_THRESHOLD = 20
 export const JUMP_FORCE = 480
 export const DETUNE = 100
+export const MAX_SCORES = 5

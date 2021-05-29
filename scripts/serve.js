@@ -13,6 +13,7 @@ serve({
   ...define({
     version,
     DEVELOP: true,
+    ENDPOINT: null,
     EXPERIMENTAL: true
   })
 }).then(server => {

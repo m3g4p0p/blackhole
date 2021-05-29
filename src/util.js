@@ -1,4 +1,4 @@
-import { develop } from './config'
+import { develop, endpoint } from './config'
 
 export function cap (value, min, max) {
   return Math.max(min, Math.min(max, value))
@@ -21,7 +21,7 @@ export function requestFullscreen () {
   canvas.requestFullscreen().catch(console.error)
 }
 
-export function getHighscore () {
+export function getLocalHighscore () {
   const highscore = localStorage.getItem('highscore')
   return highscore ? parseInt(highscore, 10) : 0
 }
@@ -36,4 +36,18 @@ export function findMissing (numbers) {
   }
 
   return max + 1
+}
+
+export function fetchHighscores (data = null) {
+  if (!endpoint) {
+    return Promise.reject(new TypeError('Highscores not implemented'))
+  }
+
+  return fetch(endpoint, {
+    method: data ? 'post' : 'get',
+    body: data && JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  }).then(res => res.json())
 }

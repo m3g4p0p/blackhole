@@ -1,5 +1,6 @@
 .venv
 .vscode
 node_modules
+backend
 dist
 yarn-error.log
