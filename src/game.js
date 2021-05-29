@@ -11,6 +11,7 @@ import creditsScene from './scenes/credits'
 import highscoreSecene from './scenes/highscore'
 import { SIZE } from './constants'
 import { develop } from './config'
+import { logError } from './util'
 
 export const isMobile = (
   window.innerWidth < SIZE.GAME.X ||
@@ -50,5 +51,5 @@ k.start('start')
 document.body.classList.toggle('is-fullscreen', isMobile)
 
 if ('serviceWorker' in navigator && !develop) {
-  navigator.serviceWorker.register('sw.js').catch(console.error)
+  navigator.serviceWorker.register('sw.js').catch(logError)
 }

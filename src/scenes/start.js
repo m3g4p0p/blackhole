@@ -1,9 +1,10 @@
 import { DIFFICULTY, MAX_SCORES } from '../constants'
-import { blackhole, develop } from '../config'
+import { blackhole } from '../config'
 import { k, isMobile, padding } from '../game'
 
 import {
   cap,
+  logError,
   requestFullscreen,
   getLocalHighscore,
   fetchHighscores
@@ -117,20 +118,24 @@ function addPadding () {
   ])
 }
 
-function loadHighscores () {
-  fetchHighscores()
-    .then(data => data
-      .slice(0, MAX_SCORES)
-      .forEach(({ name, score }, index) => {
-        k.addGUI([
-          k.text(`${name.padEnd(10, ' ')} ${score}`),
-          'highscore'
-        ], padding, 360 + index * 32)
-      }))
-    .catch(develop ? console.error : console.debug)
+function showHighscores (data) {
+  data
+    .slice(0, MAX_SCORES)
+    .forEach(({ name, score }, index) => {
+      k.addGUI([
+        k.text(`${name.padEnd(10, ' ')} ${score}`),
+        'highscore'
+      ], padding, 360 + index * 32)
+    })
 }
 
-export default function startScene (score = 0) {
+function loadHighscores () {
+  fetchHighscores()
+    .then(showHighscores)
+    .catch(logError)
+}
+
+export default function startScene (score = 0, highscores) {
   const info = k.addMessage([], padding, 200, 1, 12)
 
   highscore = Math.max(score, highscore)
@@ -230,6 +235,12 @@ export default function startScene (score = 0) {
     ], -padding, -padding)
   }
 
+  if (highscores) {
+    showHighscores(highscores)
+  } else {
+    loadHighscores()
+  }
+
   k.every('control', control => {
     const height = k.vec2(0, control.areaHeight())
     control.area.p2 = control.area.p2.add(height)
@@ -251,5 +262,4 @@ export default function startScene (score = 0) {
 
   updateInfo()
   addPadding()
-  loadHighscores()
 }

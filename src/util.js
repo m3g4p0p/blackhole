@@ -1,5 +1,9 @@
 import { develop, endpoint } from './config'
 
+export const logError = develop
+  ? console.error
+  : console.debug
+
 export function cap (value, min, max) {
   return Math.max(min, Math.min(max, value))
 }
@@ -18,7 +22,15 @@ export function requestFullscreen () {
   }
 
   const canvas = document.querySelector('canvas')
-  canvas.requestFullscreen().catch(console.error)
+  canvas.requestFullscreen().catch(logError)
+}
+
+export function exitFullscreen () {
+  if (!document.fullscreenElement) {
+    return
+  }
+
+  document.exitFullscreen().catch(logError)
 }
 
 export function getLocalHighscore () {
