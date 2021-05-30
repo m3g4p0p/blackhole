@@ -22,13 +22,13 @@ export default function highscoreSecene (score) {
   ], 0.5, 0.6)
 
   function updateName () {
-    const chars = input.value.toUpperCase().padEnd(3, '_').split('')
-    const shadowChars = chars.map(char => char === '_' ? ' ' : char)
+    const text = input.value.toUpperCase()
+    const shadowText = text.padEnd(3, ' ').split('').join(' ')
 
-    name.text = chars.join(' ')
+    name.text = text.padEnd(3, '_').split('').join(' ')
 
     k.every('shadow', shadow => {
-      shadow.text = shadowChars.join(' ')
+      shadow.text = shadowText
     })
   }
 
