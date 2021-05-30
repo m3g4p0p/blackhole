@@ -204,8 +204,8 @@ export default function startScene (score = 0, highscores) {
       'control'
     ], 0.5, padding)
 
-    k.addTextShadow(start, 0.5, 1.1, [0, start.height / -20])
-    k.addTextShadow(start, 0.25, 1.2, [0, start.height / -10])
+    k.addTextShadow(start, 0.5, 1.1)
+    k.addTextShadow(start, 0.25, 1.2)
   }
 
   function initDesktopControls () {

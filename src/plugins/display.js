@@ -59,15 +59,43 @@ export default function displayPlugin (k) {
     return countdown
   }
 
-  function addTextShadow (object, alpha, scale, offset = 0) {
-    const { r, g, b } = object.color
+  function addTextShadow (object, alpha, scale) {
+    const {
+      color,
+      origin,
+      pos,
+      text,
+      textSize,
+      width,
+      height
+    } = object
+
+    const { r, g, b } = color
+    const offsetScale = (scale - 1) * 100
+    const offset = k.vec2()
+
+    switch (true) {
+      case origin.startsWith('top'):
+        offset.y -= height / offsetScale
+        break
+      case origin.startsWith('bot'):
+        offset.y += height / offsetScale
+    }
+
+    switch (true) {
+      case origin.endsWith('left'):
+        offset.x -= width / offsetScale
+        break
+      case origin.endsWith('right'):
+        offset.x += width / offsetScale
+    }
 
     return k.add([
       k.color(r, g, b, alpha),
       k.scale(scale),
-      k.text(object.text, object.textSize),
-      k.pos(object.pos.add(offset)),
-      k.origin(object.origin),
+      k.text(text, textSize),
+      k.pos(pos.add(offset)),
+      k.origin(origin),
       'shadow'
     ])
   }

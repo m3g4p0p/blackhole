@@ -22,11 +22,14 @@ export default function highscoreSecene (score) {
   ], 0.5, 0.6)
 
   function updateName () {
-    name.text = input.value
-      .toUpperCase()
-      .padEnd(3, '_')
-      .split('')
-      .join(' ')
+    const chars = input.value.toUpperCase().padEnd(3, '_').split('')
+    const shadowChars = chars.map(char => char === '_' ? ' ' : char)
+
+    name.text = chars.join(' ')
+
+    k.every('shadow', shadow => {
+      shadow.text = shadowChars.join(' ')
+    })
   }
 
   function focusName () {
@@ -42,8 +45,8 @@ export default function highscoreSecene (score) {
   form.appendChild(input)
   document.body.appendChild(form)
   k.mouseRelease(focusName)
-  k.addTextShadow(name, 0.5, 1.1, [0, name.height / 20])
-  k.addTextShadow(name, 0.25, 1.2, [0, name.height / 10])
+  k.addTextShadow(name, 0.5, 1.1, true)
+  k.addTextShadow(name, 0.25, 1.2, true)
   exitFullscreen()
 
   input.addEventListener('input', () => {
