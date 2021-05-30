@@ -177,17 +177,18 @@ export default function gameScene (
   })
 
   ship.collides('boost', boost => {
-    const factor = difficulty / 2
-
     collected++
-    ship.jump(gravity.value * factor)
+    ship.jump(gravity.value * FACTOR.BOOST)
     k.destroy(boost)
     k.destroyAll('shield')
     k.play('booster')
     k.spawnSpark(boost)
     shake(SHAKE.BOOST)
     addScore(SCORE.BOOST * collected, true)
-    addGravity((INITIAL_GRAVITY - gravity.value) * factor)
+    addGravity(
+      (INITIAL_GRAVITY - gravity.value) *
+      difficulty * FACTOR.BOOST
+    )
 
     if (isWrecked) {
       return
@@ -334,10 +335,10 @@ export default function gameScene (
   k.gravity(INITIAL_GRAVITY)
   k.camIgnore(['gui'])
 
-  k.loop(1 / difficulty, () => {
+  k.loop(1 / difficulty, unlessWrecked(() => {
     addScore(1)
     addGravity(FACTOR.GRAVITY)
-  })
+  }))
 
   k.mouseClick(unlessWrecked(() => {
     if (!mouseControl) {

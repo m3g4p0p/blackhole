@@ -46,7 +46,7 @@ k.scene('main', mainScene)
 k.scene('death', deathScene)
 k.scene('credits', creditsScene)
 k.scene('highscore', highscoreSecene)
-k.start('start')
+k.start('highscore')
 
 document.body.classList.toggle('is-fullscreen', isMobile)
 

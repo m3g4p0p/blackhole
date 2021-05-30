@@ -119,6 +119,10 @@ function addPadding () {
 }
 
 function showHighscores (data) {
+  if (!data) {
+    return
+  }
+
   data
     .slice(0, MAX_SCORES)
     .forEach(({ name, score }, index) => {
@@ -143,8 +147,8 @@ export default function startScene (score = 0, highscores) {
 
   function updateInfo () {
     info.setText([
-      `Difficulty:     ${difficulty}`,
-      `Your highscore: ${highscore}`
+      `Difficulty: ${difficulty}`,
+      `Highscore:  ${highscore}`
     ])
 
     k.every('difficulty+', control => {
@@ -182,7 +186,7 @@ export default function startScene (score = 0, highscores) {
       'difficulty-'
     ], padding, padding)
 
-    k.addGUI([
+    const start = k.addGUI([
       k.text('START', 32),
       k.origin('top'),
       k.touches(() => {
@@ -194,10 +198,14 @@ export default function startScene (score = 0, highscores) {
         k.destroyAll('control')
         k.destroyAll('instructions')
         k.destroyAll('highscore')
-        requestFullscreen()
+        k.destroyAll('shadow')
+        k.wait(2, requestFullscreen)
       }),
       'control'
     ], 0.5, padding)
+
+    k.addTextShadow(start, 0.5, 1.1, [0, start.height / -20])
+    k.addTextShadow(start, 0.25, 1.2, [0, start.height / -10])
   }
 
   function initDesktopControls () {

@@ -26,10 +26,10 @@ export default function deathScene (score, gotWrecked) {
   }
 
   fetchHighscores().then(data => {
-    if (
+    if (data && (
       data.length < MAX_SCORES ||
       score > data.pop().score
-    ) {
+    )) {
       return goNext('highscore')
     }
 

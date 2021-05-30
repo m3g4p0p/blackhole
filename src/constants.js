@@ -28,7 +28,8 @@ export const TIME = {
 }
 
 export const FACTOR = {
-  GRAVITY: 100
+  GRAVITY: 100,
+  BOOST: 0.5
 }
 
 export const SPIN = {

@@ -12,6 +12,10 @@ export function capAbs (value, absMax) {
   return Math.max(absMax, Math.abs(value)) * Math.sign(value)
 }
 
+export function hasOwn (object, key) {
+  return Object.prototype.hasOwnProperty.call(object, key)
+}
+
 export function toggleMouseClass (value) {
   document.body.classList.toggle('mouse-control', value)
 }
@@ -50,16 +54,18 @@ export function findMissing (numbers) {
   return max + 1
 }
 
-export function fetchHighscores (data = null) {
+export async function fetchHighscores (data = null) {
   if (!endpoint) {
-    return Promise.reject(new TypeError('Highscores not implemented'))
+    return null
   }
 
-  return fetch(endpoint, {
+  const response = await fetch(endpoint, {
     method: data ? 'post' : 'get',
     body: data && JSON.stringify(data),
     headers: {
       'Content-Type': 'application/json'
     }
-  }).then(res => res.json())
+  })
+
+  return response.json()
 }

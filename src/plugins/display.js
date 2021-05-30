@@ -59,5 +59,18 @@ export default function displayPlugin (k) {
     return countdown
   }
 
-  return { addGUI, addMessage, addCountdown }
+  function addTextShadow (object, alpha, scale, offset = 0) {
+    const { r, g, b } = object.color
+
+    return k.add([
+      k.color(r, g, b, alpha),
+      k.scale(scale),
+      k.text(object.text, object.textSize),
+      k.pos(object.pos.add(offset)),
+      k.origin(object.origin),
+      'shadow'
+    ])
+  }
+
+  return { addGUI, addMessage, addCountdown, addTextShadow }
 }

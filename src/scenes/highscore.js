@@ -42,6 +42,8 @@ export default function highscoreSecene (score) {
   form.appendChild(input)
   document.body.appendChild(form)
   k.mouseRelease(focusName)
+  k.addTextShadow(name, 0.5, 1.1, [0, name.height / 20])
+  k.addTextShadow(name, 0.25, 1.2, [0, name.height / 10])
   exitFullscreen()
 
   input.addEventListener('input', () => {
@@ -63,18 +65,16 @@ export default function highscoreSecene (score) {
     fetchHighscores({
       name: input.value,
       score
-    }).then(goStart).catch((error) => {
+    }).then(goStart).catch(error => {
       logError(error)
       goStart()
     })
   })
 
   k.wait(1, () => {
-    focusName()
-  })
-
-  k.wait(2, () => {
     info.text = 'Enter your name!'
+
     updateName()
+    focusName()
   })
 }
