@@ -1,7 +1,6 @@
 import {
   CAM_THRESHOLD,
   DECAY,
-  DETUNE,
   FACTOR,
   INITIAL_GRAVITY,
   JUMP_FORCE,
@@ -290,10 +289,6 @@ export default function gameScene (
     k.spawnTail(debris)
   })
 
-  k.action('shield', shield => {
-    music.detune(DETUNE * shield.decay)
-  })
-
   k.action('satellite', satellite => {
     if (!satellite.is('fading')) {
       k.spawnTail(satellite)
@@ -324,12 +319,10 @@ export default function gameScene (
 
   k.on('add', 'shield', () => {
     hasShield = true
-    music.detune(DETUNE)
   })
 
   k.on('destroy', 'shield', () => {
     hasShield = false
-    music.detune(0)
   })
 
   k.gravity(INITIAL_GRAVITY)
