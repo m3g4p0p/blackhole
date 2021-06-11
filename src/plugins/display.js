@@ -71,25 +71,21 @@ export default function displayPlugin (k) {
     } = object
 
     const { r, g, b } = color
-    const offsetX = (scale * width - width) / 2
-    const offsetY = (scale * height - height) / 2
-    const offset = k.vec2()
+    const offsetX = (scale - 1) * width / 2
+    const offsetY = (scale - 1) * height / 2
 
-    switch (true) {
-      case origin.startsWith('top'):
-        offset.y -= offsetY
-        break
-      case origin.startsWith('bot'):
-        offset.y += offsetY
-    }
-
-    switch (true) {
-      case origin.endsWith('left'):
-        offset.x -= offsetX
-        break
-      case origin.endsWith('right'):
-        offset.x += offsetX
-    }
+    const offset = k.vec2(
+      origin.endsWith('left')
+        ? -offsetX
+        : origin.endsWith('right')
+          ? offsetX
+          : 0,
+      origin.startsWith('top')
+        ? -offsetY
+        : origin.startsWith('bot')
+          ? offsetY
+          : 0
+    )
 
     return k.add([
       k.color(r, g, b, alpha),

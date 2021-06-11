@@ -61,7 +61,7 @@ export default function highscoreSecene (score) {
     document.body.removeChild(form)
     event.preventDefault()
 
-    if (!input.value) {
+    if (!input.value.trim()) {
       return goStart()
     }
 

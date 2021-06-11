@@ -15,9 +15,6 @@
     "env": {
       "browser": true
     },
-    "ignore": [
-      "src/vendor/"
-    ],
     "overrides": [
       {
         "files": [

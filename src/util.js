@@ -1,3 +1,4 @@
+import { MAX_SCORES } from './constants'
 import { develop, endpoint } from './config'
 
 export const logError = develop
@@ -59,7 +60,13 @@ export async function fetchHighscores (data = null) {
     return null
   }
 
-  const response = await fetch(endpoint, {
+  const url = new URL(endpoint, window.location.href)
+
+  url.search = new URLSearchParams({
+    slice: MAX_SCORES
+  }).toString()
+
+  const response = await fetch(url, {
     method: data ? 'post' : 'get',
     body: data && JSON.stringify(data),
     headers: {

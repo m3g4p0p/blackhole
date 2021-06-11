@@ -220,6 +220,14 @@ export default function startScene (score = 0, highscores) {
     })
   }
 
+  function initHighscores () {
+    if (highscores) {
+      showHighscores(highscores)
+    } else {
+      loadHighscores()
+    }
+  }
+
   k.layers(['gui'])
   k.camIgnore(['gui'])
 
@@ -228,6 +236,7 @@ export default function startScene (score = 0, highscores) {
     initInstallButton()
     initInstructions()
     initEffectControls()
+    initHighscores()
   } else {
     initDesktopControls()
   }
@@ -241,12 +250,6 @@ export default function startScene (score = 0, highscores) {
       }),
       'control'
     ], -padding, -padding)
-  }
-
-  if (highscores) {
-    showHighscores(highscores)
-  } else {
-    loadHighscores()
   }
 
   k.every('control', control => {

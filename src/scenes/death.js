@@ -3,8 +3,8 @@ import { k, padding, isMobile } from '../game'
 import { toggleMouseClass, fetchHighscores } from '../util'
 
 export default function deathScene (score, gotWrecked) {
-  function goNext (scene) {
-    k.wait(3, () => k.go(scene, score))
+  function goNext (scene, ...args) {
+    k.wait(3, () => k.go(scene, score, ...args))
   }
 
   k.addMessage([
@@ -28,11 +28,11 @@ export default function deathScene (score, gotWrecked) {
   fetchHighscores().then(data => {
     if (data && (
       data.length < MAX_SCORES ||
-      score > data.pop().score
+      score > data[data.length - 1].score
     )) {
       return goNext('highscore')
     }
 
-    goNext('start')
+    goNext('start', data)
   }).catch(() => goNext('start'))
 }
