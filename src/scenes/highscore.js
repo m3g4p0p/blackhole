@@ -41,6 +41,7 @@ export default function highscoreSecene (score) {
     k.go('start', score, ...args)
   }
 
+  k.play('highscore')
   input.maxLength = 3
   form.appendChild(input)
   document.body.appendChild(form)
