@@ -9,7 +9,7 @@ export const MOVE = {
 }
 
 export const SIZE = {
-  GAME: { X: 800, Y: 800 },
+  GAME: { X: 360, Y: 800 },
   SHIP: { X: 20, Y: 40 },
   BOOST: { X: 10, Y: 10 },
   FLAME: { X: 20, Y: 5 },

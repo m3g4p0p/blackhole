@@ -34,7 +34,7 @@ export const k = window.k = kaboom({
   debug: develop
 })
 
-export const padding = isMobile ? 20 : 100
+export const padding = isMobile ? 20 : 10
 
 k.loadSound('soundtrack', 'media/soundtrack.mp3')
 k.loadSound('highscore', 'media/highscore.mp3')
